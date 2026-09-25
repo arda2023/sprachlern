@@ -8,6 +8,7 @@ abstract final class AppColors {
   static const Color surface2 = Color(0xFF424960);
   static const Color surface3 = Color(0xFF3B3F58);
   static const Color field = Color(0xFF344557);
+  static const Color flagBorder = Color(0xFF3A475F);
   static const Color scrim = Color.fromRGBO(255, 255, 255, 0.33);
   static const Color white = Color(0xFFFFFFFF);
 

@@ -80,7 +80,7 @@ class _FlagPlaceholder extends StatelessWidget {
       height: HomeHeader._flagHeight,
       decoration: BoxDecoration(
         color: AppColors.surface2,
-        border: Border.all(color: AppColors.surface3),
+        border: Border.all(color: AppColors.flagBorder),
         borderRadius: BorderRadius.circular(HomeHeader._flagRadius),
       ),
     );

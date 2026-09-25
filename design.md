@@ -23,6 +23,7 @@ Die App ist **dark-first**. Es gibt ein einziges helles Element: die Grammatik-E
 | `--surface-2` | `#424960` | Fortschrittsbalken-Track **auf** Karten, inaktive Segmente, Pill-Buttons auf `--surface`, gepunktete Wort-Unterstreichung, Info-Karte "Stapelinhalte wiederholen" |
 | `--surface-3` | `#3B3F58` | "Aktiver Tag"-Kachel (Wochenleiste), Icon-Kachel "Verben" |
 | `--field` | `#344557` | Lücke im Lückentext (leer und ausgefüllt) |
+| `--flag-border` | `#3A475F` | Rand der Flaggen-Kachel im Header der Startseite |
 | `--scrim` | `rgba(255,255,255,0.33)` | Abdunkelung hinter Bottom Sheets. Es ist ein **weißer** Schleier, die Seite dahinter wird dadurch heller und graublau. |
 | `--white` | `#FFFFFF` | Primärtext, Icons (Outline), Primär-Button-Fläche |
 
@@ -72,7 +73,7 @@ Die App ist **dark-first**. Es gibt ein einziges helles Element: die Grammatik-E
 ```css
 :root {
   --bg:#12222E; --surface:#2C3143; --surface-2:#424960; --surface-3:#3B3F58; --field:#344557;
-  --scrim:rgba(255,255,255,.33); --white:#FFFFFF;
+  --flag-border:#3A475F; --scrim:rgba(255,255,255,.33); --white:#FFFFFF;
   --cyan:#6CD5E5; --cyan-dark:#5293A3; --cyan-icon:#63E1E7; --cyan-fill-soft:#84EBEE; --teal-pill:#037889;
   --lilac:#E2B4FF; --lilac-soft:#DDC3F4; --purple:#AC6ED1; --purple-cover:#BC99D8;
   --periwinkle:#8EA3EE; --orange:#FAAA5A; --blue-link:#00B8FF;
@@ -121,7 +122,7 @@ Die Auszeichnung ist über **Familie und Farbe** geregelt: Englisch = Serif + Cy
 
 Weitere Regeln:
 - **Zeilenlänge**: Text läuft bis zum Kartenpadding. Die Sheet-Beschreibung nutzt 24 px Rand links und rechts.
-- **Zahlen**: deutsches Format mit Tausenderpunkt (`1.456`), Prozent mit Leerzeichen (`93 % von 1433`).
+- **Zahlen**: deutsches Format mit Tausenderpunkt (`1.456`), Prozent mit Leerzeichen (`93 % von 1.433` aktivierten Wörtern; unterscheidet sich von der Gesamtzahl `1.456`).
 - **Sprache**: die gesamte UI ist auf Deutsch, Anrede **"du"**.
 
 ---
@@ -196,7 +197,7 @@ Weitere Regeln:
 
 - Zurück-Pfeil links (`<`), zentrierter Titel (`nav-title`), Aktions-Icon rechts (je nach Screen: Menü `⋮`, Hilfe `?`, Plus `+`, Filter `Sliders`, oder keines). Hintergrund `--bg`, keine Linie. Haupttabs (Startseite, Mein Konto) haben keinen Zurück-Pfeil.
 - **Übungs-Top-Bar**: Home-Icon links, in der Mitte Zähler ("24/50", `meta`, `--text-muted`) über einem **Fortschrittsbalken** (243 px breit, 8 px hoch, Track `--surface`, Füllung `--lilac`), Menü ⋮ rechts.
-- **Startseiten-Kopf**: Flagge (41 × 26, Radius 2, Rand 1 px `#3A475F`) + Text "Sprache wechseln" (`title`, `--white`), rechts Glocke (mit rotem Badge-Punkt oben rechts) und Zahnrad, je 32 px.
+- **Startseiten-Kopf**: Flagge (41 × 26, Radius 2, Rand 1 px `--flag-border`) + Text "Sprache wechseln" (`title`, `--white`), rechts Glocke (mit rotem Badge-Punkt oben rechts) und Zahnrad, je 32 px.
 
 ### 5.3 Karte (Standard)
 
@@ -220,7 +221,7 @@ Weitere Regeln:
 
 ### 5.6 Stat-Karten
 
-- **Breite Fortschrittskarte** ("Stand aktivierter Wörter"): 343 × 75, Titel + Chevron, darunter `body` `--text-muted` "93 % von 1433", darunter Balken (8 px hoch, Track `--surface-2`, Füllung `--cyan`, erstes Segment 8 px `--purple`).
+- **Breite Fortschrittskarte** ("Stand aktivierter Wörter"): 343 × 104 (Höhe variabel je nach Inhalt, ca. 100–110 px; fasst Titel + Chevron, Untertitel, Fortschrittsbalken und 16 px Padding), Titel + Chevron, darunter `body` `--text-muted` "93 % von 1.433" (aktivierte Wörter; als eigene Kennzahl zur "1.456" Gesamtzahl der Wörter), darunter Balken (8 px hoch, Track `--surface-2`, Füllung `--cyan`, erstes Segment 8 px `--purple`).
 - **Kompakte Stat-Karte** (2er-Raster, 163 × 112, Radius 8, Padding 16): Icon 22 px oben links, Chevron oben rechts, darunter Zahl (`stat`, Weiß) und Label (`body-sm`, `--text-muted`, bis zu 2 Zeilen). Ein Tap öffnet ein Info-Sheet (5.11). Links: Icon zwei Balken (Cyan-Akzent), "1.456", "Gesamtzahl der Wörter". Rechts: Icon vier Quadrate (Orange-Akzent), "0", "Verfügbare Wiederholungen".
 - **Statistik-Zeilenkarte** ("Mein Wissenszentrum"): Zeilen à 46 px: Icon 28 (links), Label `title`, rechts farbiger Punkt Ø 14 (`--cyan`, `--orange`, `--lilac`) + Wert (`title`, `--text-muted`) + Chevron `›`. Trennlinie zwischen Zeilen 1 px, Einzug 8 px. Zwei separate Karten (`--surface`, Radius 8, Abstand 8): Karte 1 mit 3 Zeilen (Gesamtzahl der Wörter [Cyan-Punkt], Bekannte Wörter [Cyan-Punkt], Gesamtzahl zu lernender Wörter [Orange-Punkt]), Karte 2 mit 1 Zeile (Gesamtzahl gelernter Wörter [Lila-Punkt]).
 
@@ -262,6 +263,7 @@ Aufbau von oben nach unten, alles auf **einer** Karte (`--surface`, Radius 12, P
 
 - **Stapel-Listenkarte** (Auswahl, "Alle Stapel"): 343 × 72, `--surface`, Radius 8, Abstand 8. Links Kachel 40 × 40 (Radius 8) mit Icon (24 px, Weiß) auf individuellem farbigen Hintergrund (siehe Abschnitt 10). Rechts daneben Titel (`title`, Weiß), darunter Blitz-Level (3 × 14).
   - **Fortschrittsbalken** (100 × 8): Nur vorhanden bei bereits begonnenen Stapeln (`--surface-2` Track, `--success` Füllung für gelernte Wörter, optional `--success-dark` für gesehene Wörter). Unbegonnene Stapel zeigen **keinen** Fortschrittsbalken, nur die Blitze.
+- **Aktivitäts-Karte** (Startseite, "DERZEITIGE LERNAKTIVITÄT"): `--surface`, Radius 8, Padding 16. Links Kachel 40 × 40 (`--surface-2`, Radius 8) mit Icon (24 px, Weiß/Akzent), rechts daneben Titel (`title`, Weiß), Untertitel (`body-sm`, `--text-muted`) und Chevron `›` rechts.
 - **Stapel-Revue-Zeile**: Icon/Kachel 33, Titel (`title`, Weiß), Balken (nur Track `--surface-2`) und rechts ein runder Play-Button Ø 44 (`--surface`, weißes Play-Dreieck). Trennlinie 1 px `--surface`.
 - **Grammatik-Zeile**: Flache Liste auf `--bg` (keine umschließenden Karten). Titel (`title`), Aufgabe (`body`), Meta "Grammatik | Level 1" (`meta`, `--text-muted`), Chevron `›` rechts, 1 px Trennlinie `--surface`.
 - **Wortlisten-Zeile**: Wort (`en-headword`, `--cyan`) + Lautsprecher-Icon 24 (Weiß), darunter Beispielsatz (`en-line`, `--cyan`), darunter Meta (`meta`, `--text-muted`, "Zuletzt gesehen: … | Wiederholt: 2 Mal"). Rechts drei gedimmte Aktions-Icons (`--icon-dim`) vertikal angeordnet und Chevron `›`. Beim aktuell gewählten Wort liegt der Beispielsatz auf einer `--teal-pill`-Fläche (Radius 8). Am rechten Bildschirmrand steht eine A–Z-Sprungleiste (`meta`, `--text-muted`).
@@ -338,7 +340,7 @@ Gedrückt-Zustand: Fläche um ca. 8 % abdunkeln (Weiß → `#E6E6E6`, Karten →
 
 | Screen | Wichtigster Aufbau |
 |---|---|
-| **Startseite** | Kopf (Flagge, Glocke, Zahnrad) → HEUTIGES ZIEL + Wochenleiste → Promo-Carousel → MEINE FORTSCHRITTE (breite Karte + 2 Stat-Karten) → DERZEITIGE LERNAKTIVITÄT (Aktivitäts-Karten) → Bottom-Nav |
+| **Startseite** | Kopf (Flagge, Glocke, Zahnrad) → HEUTIGES ZIEL + Wochenleiste → Promo-Carousel → MEINE FORTSCHRITTE (breite Karte + 2 Stat-Karten) → DERZEITIGE LERNAKTIVITÄT (Aktivitäts-Karten: Icon-Kachel 40 × 40 in `--surface-2` + Titel + Untertitel) → Bottom-Nav |
 | **Inhalte** | Titel `display` → Sektion STAPEL (2 Kacheln) → Sektion ÜBUNGSAUFGABEN (Kacheln: Vokabeln, Stapel-Revue, Texte, Sprechen, Grammatik, Hören, Musik). Kacheln 163 × 100, Icon oben, Label darunter zentriert. |
 | **Stapel (Liste)** | Top-Bar mit Hilfe-Icon → Sektion LINGVIST-STAPEL → Stapel-Listenkarten (mit individuellen Icon-Farben; Balken nur bei begonnenen Stapeln) |
 | **Stapel (Detail)** | Top-Bar (beim Scrollen Titel einblendend) → Icon + Level → Titel `display` → Beschreibung → Status (5.17) → Toggle-Karte "Stapel lernen" → Primär-Button "Lerne mit diesem Stapel" → aufklappbare Karte "Deine letzten 5 gesehenen Wörter..." (dreizeilige Einträge) → MEHR DAVON (Revue-Karte mit Outline-Button "Diesen Stapel durchsehen") |

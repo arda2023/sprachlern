@@ -18,6 +18,7 @@ void main() {
       expect(AppColors.surface2, const Color(0xFF424960));
       expect(AppColors.surface3, const Color(0xFF3B3F58));
       expect(AppColors.field, const Color(0xFF344557));
+      expect(AppColors.flagBorder, const Color(0xFF3A475F));
       expect(AppColors.scrim, const Color.fromRGBO(255, 255, 255, 0.33));
       expect(AppColors.white, const Color(0xFFFFFFFF));
     });

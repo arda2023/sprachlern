@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sprachlern/screens/home_screen.dart';
+import 'package:sprachlern/theme/app_colors.dart';
 
 void main() {
   testWidgets('HomeScreen rendert Mock-Werte und alle Blöcke', (tester) async {
@@ -18,10 +19,23 @@ void main() {
     expect(find.text('24 / 50 Karten'), findsOneWidget);
     expect(find.text('Übung starten'), findsOneWidget);
     expect(find.text('MEINE FORTSCHRITTE'), findsOneWidget);
-    expect(find.textContaining('93 %'), findsOneWidget);
+    expect(find.text('93 % von 1.433'), findsOneWidget);
     expect(find.text('1.456'), findsOneWidget);
     expect(find.text('DERZEITIGE LERNAKTIVITÄT'), findsOneWidget);
     expect(find.text('Alltagswortschatz'), findsOneWidget);
+
+    // Verify flag tile uses AppColors.flagBorder
+    final flagBorderContainer = tester.widget<Container>(
+      find.descendant(
+        of: find.byType(HomeScreen),
+        matching: find.byWidgetPredicate((widget) =>
+            widget is Container &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).border ==
+                Border.all(color: AppColors.flagBorder)),
+      ),
+    );
+    expect(flagBorderContainer, isNotNull);
 
     // Week bar: 7 days with visibly different states (done / open / today).
     expect(find.bySemanticsLabel(RegExp(r', erledigt$')), findsNWidgets(3));

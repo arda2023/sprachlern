@@ -3,6 +3,7 @@ import 'package:sprachlern/models/home_data.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
+import 'package:sprachlern/utils/german_number.dart';
 
 /// Breite Fortschrittskarte, design.md 5.6.
 class ProgressStatCard extends StatelessWidget {
@@ -43,7 +44,7 @@ class ProgressStatCard extends StatelessWidget {
             ],
           ),
           Text(
-            '${stats.knownPercent} % von ${stats.wordsBase}',
+            '${stats.knownPercent} % von ${formatGermanInt(stats.wordsBase)}',
             style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: AppSpacing.s8),
