@@ -1,27 +1,27 @@
-# NEXTSTEPS – Inkrement: Bottom-Navigation-Shell
+# NEXTSTEPS – Inkrement: Startseite
 
 ## Erledigt
-- `lib/main.dart` auf `MaterialApp.router` umgestellt, dunkles Theme mit AppColors-Tokens.
-- `lib/router/app_router.dart` – `GoRouter` mit `StatefulShellRoute.indexedStack`, 5 Branches (/home, /content, /learn, /progress, /account).
-- `lib/navigation/bottom_nav_shell.dart` – Vollständige Custom-Bottom-Nav per design.md §5.1.
-- 5 Placeholder-Screens in `lib/screens/` (HomeScreen, ContentScreen, LearnScreen, ProgressScreen, AccountScreen).
-- `test/widget_test.dart` – 2 Widget-Tests; prüfen alle 5 Nav-Slots und dass Tab-Taps `IndexedStack.index` korrekt wechseln.
+- Startseite komplett aus Mock-Provider (`homeProvider`, `Provider<HomeData>`), keine Werte im Screen hartcodiert.
+- Reihenfolge: Header, HEUTIGES ZIEL + Wochenleiste, Promo-Carousel, MEINE FORTSCHRITTE (breite Karte + 2 Kompaktkarten), DERZEITIGE LERNAKTIVITÄT.
+- Wochenleiste: 3 erledigt (Häkchen), 3 offen, 1 heute (surface-3-Kachel am Label).
+- `ProviderScope` in `main()` ergänzt.
 
-## Geänderte Dateien
-`lib/main.dart`, `lib/router/app_router.dart`, `lib/navigation/bottom_nav_shell.dart`,
-`lib/screens/home_screen.dart`, `lib/screens/content_screen.dart`, `lib/screens/learn_screen.dart`,
-`lib/screens/progress_screen.dart`, `lib/screens/account_screen.dart`, `test/widget_test.dart`, `pubspec.yaml`
+## Geänderte / neue Dateien
+- Neu: `lib/models/home_data.dart`, `lib/providers/home_provider.dart`, `lib/utils/german_number.dart`, `lib/widgets/{home_header,goal_card,promo_card,progress_stat_card,compact_stat_card,section_header,activity_card}.dart`, `test/home_screen_test.dart`
+- Geändert: `lib/screens/home_screen.dart`, `lib/main.dart`, `test/widget_test.dart` (pumpt jetzt `ProviderScope(child: MyApp())`)
 
 ## Testergebnis
-`flutter analyze`: No issues found.
-`flutter test`: 10/10 passed (inkl. vorhandene theme_tokens_tests). Google-Fonts-Warnungen pre-existing.
+- `flutter analyze`: No issues found.
+- `flutter test`: 11/11 bestanden (Home-Test bei 375×812; prüft "24 / 50", "1.456", "93 %", Wochenleisten-Zustände).
 
 ## Abweichungen
-- **Icon-Paket**: `lucide_icons 0.257.0` wurde hinzugefügt, ist aber mit dem installierten Flutter SDK inkompatibel (`IconData` ist jetzt `final`, kann nicht mehr subgeclasst werden). Stattdessen werden Material-Icons-Outlined-Varianten verwendet (`Icons.home_outlined`, `Icons.grid_view_outlined`, `Icons.bar_chart_outlined`, `Icons.person_outlined`, `Icons.play_arrow`). `lucide_icons` bleibt in pubspec.yaml, wird aber nicht importiert. → Im nächsten Inkrement klären, ob das Paket entfernt oder ersetzt wird.
-- **Lernen-Label**: Aus Layout-Gründen (Overflow) ist das Label für den Lernen-Button im Row-Mittelslot platziert; der Ring+Kreis darüber ist `IgnorePointer`, sodass Taps durchfallen. Optisch korrekt.
-- UI im echten Simulator nicht getestet (kein Emulator verfügbar in dieser Session).
+- Flaggen-Rand: design.md nennt `#3A475F` (kein Token). Verwendet: `AppColors.surface3` (`#3B3F58`). Flagge = `surface2`-Platzhalter.
+- Zusätzliche, nicht gelistete Dateien: `section_header.dart`, `activity_card.dart` (Wiederverwendung statt Duplikat), `german_number.dart`.
+- Aktivitätskarten zeigen zusätzlich Icon-Kachel (40×40, `surface2`) statt reiner Textzeile (angelehnt an 5.10).
+- Fortschrittskarte hat natürliche Höhe (Padding 16); die 75 px in 5.6 reichen für Titel + Text + Balken + Padding nicht aus.
 
-## Offene Punkte
-- `lucide_icons` aus pubspec.yaml entfernen oder durch kompatibles Paket ersetzen.
-- Progressring ist statisch (0 % = voller `--surface`-Ring); live-Anbindung folgt in späterem Inkrement.
-- Badge-Punkt auf Konto-Icon ist statisch (immer sichtbar); Logik folgt später.
+## Offene Probleme
+- Nicht im Simulator/Browser gegen Screenshots geprüft; Tests laufen mit Ahem-Fallbackschrift, echte Figtree-Umbrüche ungeprüft.
+- design.md 5.6/Abschnitt 2: "1433" ohne, "1.456" mit Tausenderpunkt; wörtlich übernommen, bitte klären.
+- Bell/Zahnrad/✕/"Ziel ändern"/"Übung starten" sind inert; Icons sind Material-Outlined, keine Akzentfüllungen.
+- Inhaltsbreite nicht auf 480 px begrenzt (App-Shell-Thema).

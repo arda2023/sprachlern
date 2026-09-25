@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sprachlern/main.dart';
 
 void main() {
   testWidgets('Bottom-Nav zeigt alle 5 Slots', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('nav_0')), findsOneWidget);
@@ -15,7 +16,7 @@ void main() {
   });
 
   testWidgets('Tab-Taps wechseln den aktiven Screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
     await tester.pumpAndSettle();
 
     // Initial: branch 0 (Hauptseite)
