@@ -35,7 +35,7 @@ Die App ist **dark-first**. Es gibt ein einziges helles Element: die Grammatik-E
 | `--cyan-icon` | `#63E1E7` | Cyan-Füllungen in Illustrations-Icons (Stapel-Icon, Sterne) |
 | `--cyan-fill-soft` | `#84EBEE` | Helle Cyan-Fläche in Text-Covern |
 | `--teal-pill` | `#037889` | Hintergrund des hervorgehobenen Beispielsatzes in der Wortliste (Text darauf: `--cyan`) |
-| `--lilac` | `#E2B4FF` | **Primärer Akzent**: aktive Nav-Items, Links ("Ziel ändern", "Alle Statistiken", "Sprache wechseln"), aktive Toggles, Fortschrittsbalken der Übung, Tab-Unterstreichung, Fokusrahmen, Fortschrittsring des Lernen-Buttons, Checkboxen/Stift-Icons |
+| `--lilac` | `#E2B4FF` | **Primärer Akzent**: aktive Nav-Items, Links ("Ziel ändern", "Alle Statistiken", "Ändern", "Alle anzeigen"), aktive Toggles, Fortschrittsbalken der Übung, Tab-Unterstreichung, Fokusrahmen, Fortschrittsring des Lernen-Buttons, Checkboxen/Stift-Icons |
 | `--lilac-soft` | `#DDC3F4` | Hellflächen in Text-Covern (Diagonalstreifen) |
 | `--purple` | `#AC6ED1` | Kleines Startsegment im Fortschrittsbalken "Stand aktivierter Wörter", Gehirn-Illustration |
 | `--purple-cover` | `#BC99D8` | Lila Flächen in Text-Covern |
@@ -171,7 +171,7 @@ Weitere Regeln:
 
 ## 4. Icons
 
-- **Stil**: Outline, Strichstärke ca. 2 px, abgerundete Enden, Weiß (`--white`). Jedes Icon hat einen kleinen **farbigen Füllakzent** (Cyan, Lila, Orange oder Periwinkle), der leicht versetzt hinter oder neben dem Strich liegt.
+- **Stil**: Outline, Strichstärke ca. 2 px, abgerundete Enden, Weiß (`--white`). Jedes Icon hat einen kleinen **farbigen Füllakzent** (Standard: Cyan, Lila, Orange oder Periwinkle; in der Stapel-Übersicht auch themenspezifische Füllungen wie Pink, Türkis, Teal – siehe Abschnitt 10), der leicht versetzt hinter oder neben dem Strich liegt.
 - **Größen**: Nav-Icons 28, Top-Bar-Icons 24–28, Karten-Icons 22–32, Stapel-Icons 33, Illustrations-Icons im Sheet-Titel 24.
 - **Chevron** (`›`, `⌄`, `⌃`): 16 px, Weiß, Strichstärke 2.5.
 - **Blitz-Level** (Schwierigkeit): 3 Blitze à ca. 14 px, Abstand 16, gefüllt `--icon-bolt`, leer `--icon-bolt-off`. Niveau 1 = 1 gefüllt, 2 = 2, 3 = 3.
@@ -194,9 +194,9 @@ Weitere Regeln:
 
 ### 5.2 Top-Bar
 
-- Zurück-Pfeil links, zentrierter Titel (`nav-title`), Aktions-Icon rechts. Hintergrund `--bg`, keine Linie.
+- Zurück-Pfeil links (`<`), zentrierter Titel (`nav-title`), Aktions-Icon rechts (je nach Screen: Menü `⋮`, Hilfe `?`, Plus `+`, Filter `Sliders`, oder keines). Hintergrund `--bg`, keine Linie. Haupttabs (Startseite, Mein Konto) haben keinen Zurück-Pfeil.
 - **Übungs-Top-Bar**: Home-Icon links, in der Mitte Zähler ("24/50", `meta`, `--text-muted`) über einem **Fortschrittsbalken** (243 px breit, 8 px hoch, Track `--surface`, Füllung `--lilac`), Menü ⋮ rechts.
-- **Startseiten-Kopf**: Flagge (41 × 26, Radius 2, Rand 1 px `#3A475F`) + Link "Sprache wechseln" (`title`, `--lilac`), rechts Glocke (mit Badge) und Zahnrad, je 32 px.
+- **Startseiten-Kopf**: Flagge (41 × 26, Radius 2, Rand 1 px `#3A475F`) + Text "Sprache wechseln" (`title`, `--white`), rechts Glocke (mit rotem Badge-Punkt oben rechts) und Zahnrad, je 32 px.
 
 ### 5.3 Karte (Standard)
 
@@ -211,7 +211,7 @@ Weitere Regeln:
 - 7 Tages-Kästchen **Mo–So**, je 24 × 24, Radius 6, Abstand gleichmäßig verteilt (Pitch ca. 49).
   - Leer: transparent, Rahmen 2 px `--surface`.
   - Erledigt: Fläche `--surface-3` mit lila Stift/Häkchen-Icon (`--lilac`).
-  - Label darunter (`body`, Weiß). **Heute** (Fr) hat hinter dem Label eine `--surface`-Kachel (Radius 8).
+  - Label darunter (`body`, Weiß). **Heute** (Fr) hat hinter dem Label eine `--surface-3`-Kachel (Radius 6–8), die als vertikaler Reiter nach unten über die Zeile hinausragt.
 
 ### 5.5 Promo-/Feature-Karte (horizontaler Carousel, "Stapel-Revue")
 
@@ -221,8 +221,8 @@ Weitere Regeln:
 ### 5.6 Stat-Karten
 
 - **Breite Fortschrittskarte** ("Stand aktivierter Wörter"): 343 × 75, Titel + Chevron, darunter `body` `--text-muted` "93 % von 1433", darunter Balken (8 px hoch, Track `--surface-2`, Füllung `--cyan`, erstes Segment 8 px `--purple`).
-- **Kompakte Stat-Karte** (2er-Raster, 163 × 112, Radius 8, Padding 16): Icon 22 px oben links, Chevron oben rechts, darunter Zahl (`stat`, Weiß) und Label (`body-sm`, `--text-muted`, bis zu 2 Zeilen). Ein Tap öffnet ein Info-Sheet (5.11).
-- **Statistik-Zeilenkarte** ("Mein Wissenszentrum"): Zeilen à 46 px: Icon 28 (links), Label `title`, rechts farbiger Punkt Ø 14 (`--cyan`, `--lilac`, `--orange`) + Wert (`title`, `--text-muted`) + Chevron. Trennlinie zwischen Zeilen 1 px, Einzug 8 px. Gruppen sind eigene Karten, Abstand 8.
+- **Kompakte Stat-Karte** (2er-Raster, 163 × 112, Radius 8, Padding 16): Icon 22 px oben links, Chevron oben rechts, darunter Zahl (`stat`, Weiß) und Label (`body-sm`, `--text-muted`, bis zu 2 Zeilen). Ein Tap öffnet ein Info-Sheet (5.11). Links: Icon zwei Balken (Cyan-Akzent), "1.456", "Gesamtzahl der Wörter". Rechts: Icon vier Quadrate (Orange-Akzent), "0", "Verfügbare Wiederholungen".
+- **Statistik-Zeilenkarte** ("Mein Wissenszentrum"): Zeilen à 46 px: Icon 28 (links), Label `title`, rechts farbiger Punkt Ø 14 (`--cyan`, `--orange`, `--lilac`) + Wert (`title`, `--text-muted`) + Chevron `›`. Trennlinie zwischen Zeilen 1 px, Einzug 8 px. Zwei separate Karten (`--surface`, Radius 8, Abstand 8): Karte 1 mit 3 Zeilen (Gesamtzahl der Wörter [Cyan-Punkt], Bekannte Wörter [Cyan-Punkt], Gesamtzahl zu lernender Wörter [Orange-Punkt]), Karte 2 mit 1 Zeile (Gesamtzahl gelernter Wörter [Lila-Punkt]).
 
 ### 5.7 Lückentext-Karte (Kern-Komponente)
 
@@ -239,42 +239,53 @@ Aufbau von oben nach unten, alles auf **einer** Karte (`--surface`, Radius 12, P
 
 ### 5.8 Text-Übung (Lückentext im Fließtext)
 
-- Kopf: Titel des Textes (`meta`, Weiß) über einem Fortschrittsbalken (wie 5.2).
+- Kopf: `✕` links, Titel des Textes (`meta`, Weiß) mittig, Glühbirnen-Icon rechts, darunter 2 px Fortschrittsbalken (wie 5.2).
 - Text `read` (20/36, Weiß). Lücken sind **Inline-Eingabefelder**, 128 × 28, `--surface`, Radius 8. Als Platzhalter dient das Grundwort in `--text-muted` (z. B. "combine").
 - **Fokus**: Rahmen 2 px `--lilac`, blauer System-Cursor.
-- Zusatzleiste über der Tastatur: links zwei Icons (Übersetzen, Wechseln), rechts Text-Button "Antwort anzeigen" (`title`, Weiß).
+- **Tastatur-Zusatzleiste**: Dunkle Leiste direkt über der Tastatur (Höhe ca. 44–48 px, `--bg` bzw. `--surface`). Links zwei Icons: `文A` (Übersetzen) und `⇄` (Wechseln/Zyklus) in Weiß (Tap-Ziel ca. 40 × 40). Rechts Text-Button "Antwort anzeigen" (`title`, Weiß, flach ohne Kasten/Pill).
+- **Keine Sprungleiste**: In der Text-Übung gibt es keine A–Z-Sprungleiste (diese existiert ausschließlich in der Wortlisten-Übersicht).
 
 ### 5.9 Auswahl-Übung (Grammatik)
 
-- Aufgabe oben (`title`), darunter die drei Optionen als Liste "a) … b) … c) …" in `--cyan` Serif (`en-line`).
-- Frage und Antwortzeilen sind **unten am Bildschirm** verankert, große freie Fläche dazwischen.
-- Antwortzeile: Höhe 51, Padding 0 16, Text Serif `--cyan`. Zeilenabstand 60.
-- **Falsch**: Rahmen 2 px `--error`, Radius 12, rechts ein Kreis-Icon Ø 22 `--error` mit weißem X.
-- **Richtig**: Rahmen und Icon in `--success` (analog, nach dem Muster der Fehler-Antwort).
-- Betonte Buchstaben in englischen Wörtern werden mit einer 1.5 px Linie unterstrichen (z. B. Endung "-le").
+- Satz mit Lücke oben/mittig (`sentence`, `--cyan`, Serif), z. B. "We went through the ... check together.", darunter große freie Fläche.
+- Kopf: `✕` links, 2 px Fortschrittsbalken, Glühbirnen-Icon rechts.
+- Aufgabenzeile und Antwortoptionen sind **unten am Bildschirm** verankert:
+  - Konkrete Aufgabenzeile direkt über den Optionen (`body` bzw. `body-sm`, `--text-muted` / Weiß), z. B. "Wähle das Wort, das am besten in die Lücke passt" oder "Wähle die richtige Antwort".
+  - Drei Antwortzeilen: Höhe 52–56 px, Padding 0 16, Zeilenabstand / Pitch ca. 60–64 px.
+  - Antwortoptionen können entweder englische Wörter in `--cyan` Serif (`en-line`) oder Sans-Serif Buchstaben ("C", "B", "A" in Weiß) sein.
+  - **Standard-Zustand**: Die Optionen haben **keinen Rahmen** (flach auf `--bg`, kein Rand/Hintergrund).
+  - **Fehler-Zustand (Falsch)**: Nur die angetippte falsche Option erhält einen Rahmen: 2 px `--error`, Radius 12, Höhe 52–56 px, Padding 0 16. Rechts am Zeilenende erscheint ein gefülltes Kreis-Icon (Ø 22, `--error`) mit zentriertem weißem `✕`. Die anderen beiden Optionen bleiben rahmenlos.
+  - **Richtig**: Rahmen und Icon in `--success` (analog, nach dem Muster der Fehler-Antwort; siehe Abschnitt 10).
+  - Betonte Buchstaben in englischen Wörtern werden mit einer 1.5 px Linie unterstrichen (z. B. Endung "-le").
 
 ### 5.10 Listenzeilen
 
-- **Stapel-Listenkarte** (Auswahl): 343 × 72, `--surface`, Radius 8, Abstand 8. Links Icon 33 (16 px vom Rand), rechts daneben Titel (`title`), darunter Blitz-Level (3 × 14) und optional ein Fortschrittsbalken 100 × 8 (`--surface-2` Track, `--success` Füllung, ggf. `--success-dark` Zwischenstück).
-- **Stapel-Revue-Zeile**: Icon 33, Titel, Balken (nur Track) und rechts ein runder Play-Button Ø 44, `--surface`, weißes Play-Icon. Trennlinie 1 px `--surface`.
-- **Grammatik-Zeile**: Titel (`title`), Aufgabe (`body`), Meta "Grammatik | Level 1" (`meta`, `--text-muted`), Chevron `›` rechts, 1 px Trennlinie.
-- **Wortlisten-Zeile**: Wort (`en-headword`, `--cyan`) + Lautsprecher-Icon 24 (Weiß), darunter Beispielsatz (`en-line`, `--cyan`), darunter Meta (`meta`, `--text-muted`, "Zuletzt gesehen: … | Wiederholt: 2 Mal"). Rechts drei gedimmte Aktions-Icons (`--icon-dim`) und Chevron. Beim aktuell gewählten Wort liegt der Beispielsatz auf einer `--teal-pill`-Fläche (Radius 8). Am Rand steht eine A–Z-Sprungleiste (`meta`, `--text-muted`).
-- **Hinweis-Liste** (Grammatikhinweise, Konto, Einstellungen): Zeilen mit `title` Weiß, 60 px hoch, 1 px Trennlinie `--surface`, Chevron rechts, optionaler Wert links vom Chevron in `--text-muted`.
+- **Stapel-Listenkarte** (Auswahl, "Alle Stapel"): 343 × 72, `--surface`, Radius 8, Abstand 8. Links Kachel 40 × 40 (Radius 8) mit Icon (24 px, Weiß) auf individuellem farbigen Hintergrund (siehe Abschnitt 10). Rechts daneben Titel (`title`, Weiß), darunter Blitz-Level (3 × 14).
+  - **Fortschrittsbalken** (100 × 8): Nur vorhanden bei bereits begonnenen Stapeln (`--surface-2` Track, `--success` Füllung für gelernte Wörter, optional `--success-dark` für gesehene Wörter). Unbegonnene Stapel zeigen **keinen** Fortschrittsbalken, nur die Blitze.
+- **Stapel-Revue-Zeile**: Icon/Kachel 33, Titel (`title`, Weiß), Balken (nur Track `--surface-2`) und rechts ein runder Play-Button Ø 44 (`--surface`, weißes Play-Dreieck). Trennlinie 1 px `--surface`.
+- **Grammatik-Zeile**: Flache Liste auf `--bg` (keine umschließenden Karten). Titel (`title`), Aufgabe (`body`), Meta "Grammatik | Level 1" (`meta`, `--text-muted`), Chevron `›` rechts, 1 px Trennlinie `--surface`.
+- **Wortlisten-Zeile**: Wort (`en-headword`, `--cyan`) + Lautsprecher-Icon 24 (Weiß), darunter Beispielsatz (`en-line`, `--cyan`), darunter Meta (`meta`, `--text-muted`, "Zuletzt gesehen: … | Wiederholt: 2 Mal"). Rechts drei gedimmte Aktions-Icons (`--icon-dim`) vertikal angeordnet und Chevron `›`. Beim aktuell gewählten Wort liegt der Beispielsatz auf einer `--teal-pill`-Fläche (Radius 8). Am rechten Bildschirmrand steht eine A–Z-Sprungleiste (`meta`, `--text-muted`).
+- **Hinweis-Liste** (Grammatikhinweise, Konto, Einstellungen):
+  - In **Grammatikhinweise**: Zeilen mit `title` Weiß, 60 px hoch, 1 px Trennlinie `--surface`, **kein Chevron** rechts (reiner linksbündiger Text).
+  - In **Konto / Einstellungen**: Zeilen mit `title` Weiß, 60 px hoch, 1 px Trennlinie `--surface`, Chevron `›` rechts, optionaler Wert links vom Chevron in `--text-muted`.
 
 ### 5.11 Bottom Sheet (Info-Popup)
 
 - Von unten eingeblendet, Fläche `--bg` (bei Wort-Info `--surface`), obere Ecken 16, Seitenpadding 24, hinter dem Sheet `--scrim`.
 - `✕` oben rechts (24 px, 24 px vom Rand, 21 px unter der Kante).
 - Titel `display` (24/28) mit optionalem Icon 24 davor; Beschreibung `body`, Weiß bzw. `--text-muted`.
-- **Wertzeile**: zwischen zwei Trennlinien (1 px Weiß, Einzug 16): Label `title` links, Wert `stat-lg` `--text-muted` rechts.
-- **Primär-Button** (weiß, 343 × 46) am unteren Rand, z. B. "Jetzt lernen", "OK".
+- **Wertzeile**: zwischen zwei Trennlinien (1 px, Einzug 16): Label `title` links, Wert `stat-lg` `--text-muted` rechts.
+- **Varianten nach Fußbereich**:
+  - **Info-Sheets ohne Button**: Wissenszentrum-Statistik-Popup oder Wort-Info besitzen **keinen** Primär-Button am unteren Rand; Schließen erfolgt ausschließlich über das `✕` oben rechts oder Herunterwischen.
+  - **Aktions-Sheets mit Button**: Primär-Button (weiß, 343 × 46, Text `--text-on-light`, Radius 8) am unteren Rand, z. B. "Jetzt lernen", "Ziel festlegen".
+  - **Vorschau-Sheet mit Übungsliste** (Texte-Vorschau): Cover 88 × 128 links, daneben Titel und Level-Badge ("A1", `--surface-2`), Beschreibung, darunter Übungszeilen ("Verben", "Beliebige Wortart") mit jeweils rundem Play-Button Ø 44 rechts.
 - Optionaler Illustrationsblock (Icon 80 px) zentriert über dem Titel.
 
 ### 5.12 Buttons
 
 | Typ | Aussehen |
 |---|---|
-| **Primär** | Fläche `--white`, Text `--text-on-light`, `title`, 343 × 46, Radius 8, zentriert |
+| **Primär** | Fläche `--white`, Text `--text-on-light`, `title`, 343 × 46, Radius 8, zentriert (z. B. "Lerne mit diesem Stapel") |
 | **Primär-Pill** | wie Primär, aber voll rund, Höhe 30, Padding 0 16 (Promo-Karten) |
 | **Sekundär-Pill** | Fläche `--surface-2`, Text Weiß, voll rund, Höhe 30 (Tastaturleiste) |
 | **Outline** | transparent, Rahmen 1.5 px Weiß, Text Weiß, Radius 12, Höhe 46 ("Stapel nochmals durchsehen", "Abmelden") |
@@ -306,11 +317,20 @@ Gedrückt-Zustand: Fläche um ca. 8 % abdunkeln (Weiß → `#E6E6E6`, Karten →
 
 - 343-Zeile: Feld (Höhe 46, `--surface`, Radius 8, Lupe 24, Platzhalter "Suchen", Weiß) + Quadrat-Button 46 × 46 (`--surface`, Radius 8, Icon) mit 8 px Abstand.
 
-### 5.17 Status-Bar-Kennzeichen (Stapel-Detail)
+### 5.17 Status-Bar-Kennzeichen & Detail-Karten (Stapel-Detail)
 
-- Zwei Zeilen mit Punkt Ø 8: `--success-dark` "41 von 126 neuen Wörtern" (`body`), `--success` "28 Wörter gelernt".
-- Darunter Balken 343 × 8: `--success` (gelernt) + `--success-dark` (gesehen) auf Track `--surface`.
-- Level-Angabe rechts oben: "Mittleres Niveau" (`body-sm`, `--text-muted`) + 3 Blitze.
+- **Top-Bar**: Zurück-Pfeil `‹` links, Teilen/Mehr-Icon rechts. Beim Hinunterscrollen schiebt sich der Stapeltitel zentriert in die Top-Bar.
+- **Statusbereich**:
+  - Zwei Zeilen mit Punkt Ø 8: `--success-dark` "41 von 126 neuen Wörtern" (`body`), `--success` "28 Wörter gelernt".
+  - Darunter Balken 343 × 8: `--success` (gelernt) + `--success-dark` (gesehen) auf Track `--surface`.
+  - Level-Angabe rechts oben: "Mittleres Niveau" (`body-sm`, `--text-muted`) + 3 Blitze.
+- **Primär-Button**: 343 × 46, Weiß, Text "Lerne mit diesem Stapel".
+- **Aufklappbare Karte "letzte 5 Wörter"**: `--surface`, Radius 12, Titel "Deine letzten 5 gesehenen Wörter dieses Stapels:" (`title`, Weiß) + Chevron `⌄` bzw. `⌃`.
+  - Aufgeklappt: 5 Einträge, getrennt durch 1 px Trennlinien.
+  - Jeder Eintrag dreizeilig:
+    1. Deutsches Wort (`title`, Weiß)
+    2. Deutscher Beispielsatz (`body-sm`, `--text-muted`)
+    3. Englischer Beispielsatz (`sentence`/`en-line`, `--cyan`, Serif)
 
 ---
 
@@ -320,16 +340,16 @@ Gedrückt-Zustand: Fläche um ca. 8 % abdunkeln (Weiß → `#E6E6E6`, Karten →
 |---|---|
 | **Startseite** | Kopf (Flagge, Glocke, Zahnrad) → HEUTIGES ZIEL + Wochenleiste → Promo-Carousel → MEINE FORTSCHRITTE (breite Karte + 2 Stat-Karten) → DERZEITIGE LERNAKTIVITÄT (Aktivitäts-Karten) → Bottom-Nav |
 | **Inhalte** | Titel `display` → Sektion STAPEL (2 Kacheln) → Sektion ÜBUNGSAUFGABEN (Kacheln: Vokabeln, Stapel-Revue, Texte, Sprechen, Grammatik, Hören, Musik). Kacheln 163 × 100, Icon oben, Label darunter zentriert. |
-| **Stapel (Liste)** | Top-Bar mit Hilfe-Icon → Sektion LINGVIST-STAPEL → Stapel-Listenkarten |
-| **Stapel (Detail)** | Icon + Level → Titel `display` → Beschreibung → Status → Toggle-Karte "Stapel lernen" → Primär-Button → aufklappbare Karte "letzte 5 Wörter" → MEHR DAVON (Revue-Karte mit Outline-Button) |
-| **Stapel-Revue** | Info-Karte (schließbar, `--surface-2`) → Liste der Stapel mit Play-Buttons |
+| **Stapel (Liste)** | Top-Bar mit Hilfe-Icon → Sektion LINGVIST-STAPEL → Stapel-Listenkarten (mit individuellen Icon-Farben; Balken nur bei begonnenen Stapeln) |
+| **Stapel (Detail)** | Top-Bar (beim Scrollen Titel einblendend) → Icon + Level → Titel `display` → Beschreibung → Status (5.17) → Toggle-Karte "Stapel lernen" → Primär-Button "Lerne mit diesem Stapel" → aufklappbare Karte "Deine letzten 5 gesehenen Wörter..." (dreizeilige Einträge) → MEHR DAVON (Revue-Karte mit Outline-Button "Diesen Stapel durchsehen") |
+| **Stapel-Revue** | Info-Karte (schließbar, `--surface-2`) → Liste der Stapel mit Play-Buttons (Ø 44) und leerem Track |
 | **Übung (Vokabeln)** | Übungs-Top-Bar → Lückentext-Karte → Übersetzungs-Karte → Tastatur-Leiste. Sheet für Grammatikhinweis. |
 | **Texte** | Carousel mit Text-Covern → Sheet mit Vorschau und Übungen ("Verben", "Beliebige Wortart") mit Play-Buttons |
-| **Text-Übung** | Fließtext mit Inline-Lücken (5.8) |
-| **Grammatik** | Tabs "Meine Übungen / Fertig" → Zeilenliste. Übung: Auswahl-Aufgaben (5.9). |
-| **Grammatikhinweise** | Tabs (Anfänger / Mittleres Niveau / Fortgeschrittene) → Themenliste → helle Erklärungsseite |
-| **Wortlisten** | Suchfeld → Wortlisten-Zeilen → Info-Sheet zum Wort (`--surface`, mit Notizfeld "Füge eigene Notizen hinzu …", Zähler "0 / 1000") |
-| **Mein Wissenszentrum** | Große Illustration (zentriert, ca. 300 breit) → Statistik-Zeilenkarten |
+| **Text-Übung** | Fließtext mit Inline-Lücken (5.8) → Tastatur-Zusatzleiste (Icons `文A`, `⇄` links, Button "Antwort anzeigen" rechts; keine Sprungleiste) |
+| **Grammatik** | Tabs "Meine Übungen / Fertig" → Zeilenliste direkt auf `--bg` (5.10). Übung: Auswahl-Aufgaben mit Frage & Optionen unten (5.9). |
+| **Grammatikhinweise** | Tabs (Anfänger / Mittleres Niveau / Fortgeschrittene) → Themenliste ohne Chevrons (5.10) → helle Erklärungsseite (9) |
+| **Wortlisten** | Suchfeld → Wortlisten-Zeilen mit vertikalen Aktions-Icons und A–Z-Sprungleiste → Info-Sheet zum Wort (`--surface`, mit Notizfeld "Füge eigene Notizen hinzu …", Zähler "0 / 1000", ohne Button) |
+| **Mein Wissenszentrum** | Große Illustration (zentriert, ca. 300 breit) → 2 Statistik-Karten (3 Zeilen und 1 Zeile) → Info-Sheet ohne Button bei Zeilen-Tap |
 | **Konto** | Titel zentriert → Profilzeilen (Icon + Wert) → Liste (Kontoeinstellungen, Abonnement mit rotem Punkt und Wert "Testabo", Hilfe, App bewerten) → Version + Links → Outline-Button "Abmelden" |
 | **Einstellungen** | Zeilenliste mit Toggles und Chevron-Werten (Motiv, Benachrichtigungen, Ton aus, Audiogeschwindigkeit, Spracheingabe, Diakritische Zeichen, Nächste Karte automatisch, Grammatiktabellen) |
 
@@ -374,3 +394,5 @@ Einzige Seite im hellen Theme (wirkt wie eine eingebettete Web-Ansicht):
 - Der Zwischenzustand "richtig" der Auswahl-Übung ist in den Screenshots nicht zu sehen und aus dem Fehler-Zustand abgeleitet.
 - Das Cover-Design (Streifen/Dreiecke) und die Illustrationen sind eigene Assets, die neu entworfen werden müssen.
 - Helles Theme der restlichen App: in den Einstellungen gibt es den Punkt "Motiv" (Automatisch, zwei Farbschemata), ein helles Gesamt-Theme ist aber nicht abgebildet. Bis dahin ist nur das dunkle Theme verbindlich.
+- **Individuelle Stapel-Icon-Hintergrundfarben**: In `Alle_Stapel_Übersicht.PNG` besitzen die Kacheln der Stapel-Icons jeweils individuelle Hintergrundfarben (z. B. Pink/Magenta `#E0528B`, Türkis/Mint `#00BFA5`, Blau/Teal `#00B894` etc.). Diese sind nicht im Design-Token-Set definiert und sollten als Thema für Stapel-Metadaten oder ein erweitertes Farbsystem geklärt werden, anstatt ad hoc neue Farb-Tokens einzuführen.
+- **Farbsemantik der Statuspunkte im Wissenszentrum**: Im Wissenszentrum (`Mein_Wissen_Statistiken.PNG`) ist der Punkt für "Gesamtzahl gelernter Wörter" lila (`--lilac`), während gelernte Wörter im Stapel-Detail-Fortschrittsbalken mit `--success` (Grün) dargestellt werden. Die semantische Farbvergabe sollte vereinheitlicht oder dokumentiert werden.
