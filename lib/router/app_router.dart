@@ -3,9 +3,11 @@ import 'package:sprachlern/navigation/bottom_nav_shell.dart';
 import 'package:sprachlern/screens/account_screen.dart';
 import 'package:sprachlern/screens/content_screen.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
+import 'package:sprachlern/screens/grammar_exercise_screen.dart';
 import 'package:sprachlern/screens/home_screen.dart';
 import 'package:sprachlern/screens/learn_screen.dart';
 import 'package:sprachlern/screens/progress_screen.dart';
+import 'package:sprachlern/screens/stack_list_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
@@ -45,5 +47,10 @@ final appRouter = GoRouter(
       ],
     ),
     GoRoute(path: '/exercise', builder: (_, _) => const ExerciseScreen()),
+    GoRoute(
+      path: '/grammar-exercise',
+      builder: (_, _) => const GrammarExerciseScreen(),
+    ),
+    GoRoute(path: '/stacks', builder: (_, _) => const StackListScreen()),
   ],
 );

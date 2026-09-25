@@ -1,24 +1,27 @@
-# NEXTSTEPS – Vokabelübung
+# NEXTSTEPS – Grammatikübung und Inhalte
 
 ## Erledigt
-- Übungs-Top-Bar, Lückentext, Übersetzungs-Karte, Grammatik-Sheet und Eingabezeile umgesetzt.
-- Mock-Daten liegen im Riverpod-Provider; `/exercise` ist als eigenständige Route verfügbar.
-- Widget-Test deckt leere und gefüllte Lücke sowie Öffnen/Schließen des Sheets ab.
+- Grammatik-Auswahlübung mit Feedback für richtige und falsche Auswahl umgesetzt.
+- Inhalte-Übersicht mit 2 Stapel- und 7 Übungs-Kacheln umgesetzt.
+- Markenneutrale Stapelliste mit begonnenen und unbegonnenen Stapeln umgesetzt.
+- Routen `/grammar-exercise` und `/stacks` sowie Widget-Tests ergänzt.
 
 ## Geänderte Dateien
-- `lib/models/exercise_data.dart`, `lib/providers/exercise_provider.dart`, `lib/screens/exercise_screen.dart`
-- `lib/widgets/exercise_top_bar.dart`, `fill_in_card.dart`, `translation_card.dart`
-- `lib/widgets/exercise_input_bar.dart`, `grammar_hint_sheet.dart`, `lib/router/app_router.dart`
-- `test/exercise_screen_test.dart`, `NEXTSTEPS.md`
+- `lib/models/grammar_exercise_data.dart`, `lib/providers/grammar_exercise_provider.dart`
+- `lib/screens/grammar_exercise_screen.dart`, `lib/widgets/grammar_answer_option.dart`
+- `lib/models/content_data.dart`, `lib/providers/content_provider.dart`
+- `lib/screens/content_screen.dart`, `lib/screens/stack_list_screen.dart`
+- `lib/widgets/content_tile.dart`, `lib/widgets/stack_list_item.dart`, `lib/router/app_router.dart`
+- `test/grammar_exercise_screen_test.dart`, `test/content_stack_screens_test.dart`, `NEXTSTEPS.md`
 
 ## Testergebnis
 - `flutter analyze`: No issues found.
-- `flutter test`: 13/13 bestanden.
+- `flutter test`: 16 Tests bestanden.
 
 ## Abweichungen
-- „Neues Wort" wird bei Status kleiner oder gleich 1 angezeigt.
-- Wortübersetzungen öffnen als Tap-Tooltip; die Übersetzungs-Karte startet eingeklappt.
-- Die Lücke füllt beim Tap direkt mit der Mock-Antwort; keine Antwortprüfung oder Tastatureingabe.
+- Die Grammatikübung nutzt einen eigenen Kopf, weil sie ✕, Glühbirne und einen 2-px-Balken statt der Vokabel-Top-Bar benötigt.
+- Inhalte-Kacheln verwenden Radius 8 gemäß der Regel für kleine Karten; alle Kachel- und Stapel-Icons nutzen `AppColors.periwinkle`.
+- Die markenfreie Stapel-Sektion heißt „DEINE STAPEL“ statt „LINGVIST-STAPEL“.
 
 ## Offene Probleme
-- Keine bekannt.
+- Keine visuelle Prüfung im Simulator oder Browser durchgeführt.
