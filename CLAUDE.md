@@ -11,6 +11,7 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 **Jede Code-Generierung, die UI betrifft, muss sich strikt an `design.md` halten.** Vor jeder UI-Änderung die relevanten Abschnitte in `design.md` lesen. Bei Abweichung gewinnt `design.md`, nicht die Gewohnheit oder ein Framework-Default.
 
 ### Farben
+
 - Es dürfen **nur** die Farb-Tokens aus `design.md` (Abschnitt 1) verwendet werden. Sie sind einmal zentral zu definieren (CSS-Variablen bzw. Theme-Datei, Vorlage in 1.6) und ausschließlich darüber zu referenzieren.
 - **Keine Hex-, RGB- oder Framework-Farben** direkt in Komponenten (kein `#fff`, `white`, `gray-500`, `bg-slate-800` usw.).
 - Neue Farbe nötig? Nicht selbst erfinden. Stattdessen nachfragen und zuerst `design.md` ergänzen, danach den Token verwenden.
@@ -20,6 +21,7 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 - Keine Verläufe, keine Schatten, kein Blur, keine Transparenz außer dem `--scrim`.
 
 ### Komponenten
+
 - Für alles, was in `design.md` Abschnitt 5 beschrieben ist (Bottom-Navigation, Lückentext-Karte, Stat-Karten, Listenzeilen, Bottom Sheet, Buttons, Toggle, Tabs, Cover-Karte, Suchfeld usw.), gibt es **genau eine wiederverwendbare Komponente**. Nicht pro Screen neu bauen.
 - Maße, Abstände, Radien und Typografie kommen aus den Tokens von `design.md` (Abschnitte 2 und 3). Keine Magic Numbers in Komponenten.
 - Erlaubte Abstandsskala: `4 · 8 · 12 · 16 · 24 · 32 · 40`. Seitenrand immer 16, Karten-Innenpadding 16.
@@ -28,6 +30,7 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 - Bei Widerspruch zwischen `design.md` und einem Screenshot: Screenshot prüfen, `design.md` korrigieren und dem Nutzer kurz mitteilen. Nicht stillschweigend abweichen.
 
 ### Selbstprüfung vor Abschluss jeder UI-Aufgabe
+
 1. Kommt im Diff eine Farbe vor, die kein Token ist? Dann korrigieren.
 2. Wurde für ein vorhandenes Muster eine bestehende Komponente verwendet?
 3. Stimmen Radien, Abstände und Schriftstile mit `design.md` überein?
@@ -37,28 +40,33 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 ## Allgemeine Richtlinien
 
 ### Sprache
+
 - Mit dem Nutzer auf **Deutsch** kommunizieren.
 - **UI-Texte auf Deutsch** in der Anrede "du" (wie in den Screenshots). Englisch nur für den Lerninhalt.
 - Code, Bezeichner, Commit-Messages und technische Kommentare auf **Englisch**.
 
 ### Arbeitsweise
+
 - Kleine, überprüfbare Schritte. Ein Screen oder eine Komponente pro Aufgabe. Nichts bauen, was nicht verlangt wurde.
 - Vor größeren Entscheidungen (Stack, Datenmodell, Backend) kurz eine Empfehlung mit dem wichtigsten Trade-off nennen und bestätigen lassen.
 - Bestehenden Code bevorzugt ändern statt neue Dateien anzulegen. Keine spekulativen Abstraktionen, kein toter Code.
-- Kommentare nur, wenn das *Warum* nicht offensichtlich ist.
+- Kommentare nur, wenn das _Warum_ nicht offensichtlich ist.
 - Commits nur auf ausdrückliche Anfrage.
 
 ### Lernlogik (Domäne)
+
 - Karten folgen einem Wiederholungs-Algorithmus (Spaced Repetition). Wort-Status ("Neues Wort" → gelernt) wird über die 5 Status-Striche dargestellt.
 - Die **Stapel-Revue** ist eine reine Wiederholung ohne Einfluss auf den Algorithmus. Sie darf keinen Lernstatus ändern und zeigt keine neuen Wörter.
 - Tagesziel (z. B. 50 Karten) und Wochenleiste basieren auf der Zahl erledigter Karten pro Tag.
 
 ### Qualität
+
 - Barrierefreiheit gemäß `design.md` Abschnitt 8: Kontraste, Fokus-Ring, `aria-label` für Icon-Buttons, Status nie nur über Farbe.
 - Deutsche Zahlenformate (`1.456`, `93 %`) und Umlaute/`ß` korrekt darstellen (UTF-8, Schrift mit vollem Latin-Support).
 - Mobile-first, Basisbreite 375 px. Auf größeren Bildschirmen den Inhalt zentrieren (max. 480 px), nicht strecken.
 
 ### Rechtliches und Datenschutz
+
 - Die Screenshots stammen aus einer bestehenden kommerziellen App. **Keinen Markennamen, kein Logo, keine Illustrationen, Icons, Texte oder Lerninhalte aus den Screenshots übernehmen.** Name, Icons, Cover-Grafiken, Illustrationen und Inhalte werden eigenständig erstellt.
 - Die Screenshots enthalten persönliche Daten (Name, E-Mail). Diese nie in Code, Tests oder Seed-Daten übernehmen. Für Beispieldaten Platzhalter verwenden.
 - Den Ordner `Screenshots/` nicht veröffentlichen (nicht in ein öffentliches Repo committen), solange der Nutzer nichts anderes sagt.
@@ -72,6 +80,7 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 - **Backend**: Supabase ist für ein späteres Backend-Inkrement geplant, aber aktuell noch nicht integriert.
 
 ### Build- und Test-Befehle
+
 - `flutter analyze`
 - `flutter test`
 - `flutter run`

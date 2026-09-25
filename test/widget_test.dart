@@ -1,30 +1,67 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:sprachlern/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Bottom-Nav zeigt alle 5 Slots', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.byKey(const ValueKey('nav_0')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav_1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav_2')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav_3')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav_4')), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('Tab-Taps wechseln den aktiven Screen', (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Initial: branch 0 (Hauptseite)
+    expect(
+      tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
+      equals(0),
+    );
+
+    // Tap Inhalte → branch 1
+    await tester.tap(find.byKey(const ValueKey('nav_1')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
+      equals(1),
+    );
+
+    // Tap Lernen → branch 2
+    await tester.tap(find.byKey(const ValueKey('nav_2')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
+      equals(2),
+    );
+
+    // Tap Fortschritte → branch 3
+    await tester.tap(find.byKey(const ValueKey('nav_3')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
+      equals(3),
+    );
+
+    // Tap Konto → branch 4
+    await tester.tap(find.byKey(const ValueKey('nav_4')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
+      equals(4),
+    );
+
+    // Tap Hauptseite → back to branch 0
+    await tester.tap(find.byKey(const ValueKey('nav_0')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
+      equals(0),
+    );
   });
 }
