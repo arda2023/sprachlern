@@ -4,7 +4,7 @@
 
 Klon einer Englisch-Lern-App für **deutsche Muttersprachler** (Vokabel-Karteikarten mit Lückentext, Grammatik-Übungen, Texte, Statistiken). Die Vorlage sind die Screenshots in `./Screenshots/`. Die gesamte visuelle Spezifikation steht in **`design.md`**.
 
-Der Tech-Stack ist noch **nicht festgelegt**. Vor dem ersten Code kurz mit dem Nutzer abstimmen, welcher Stack verwendet wird (z. B. Web-App/PWA mit React oder Flutter/React Native), und die Entscheidung hier unter "Tech-Stack" eintragen.
+Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_router (Navigation). Details siehe Abschnitt [Tech-Stack](#tech-stack).
 
 ## Oberste Regel: design.md ist verbindlich
 
@@ -65,7 +65,16 @@ Der Tech-Stack ist noch **nicht festgelegt**. Vor dem ersten Code kurz mit dem N
 
 ## Tech-Stack
 
-_Noch offen. Nach der Abstimmung hier eintragen (Framework, Sprache, Styling-Ansatz, Build- und Test-Befehle)._
+- **Framework**: Flutter
+- **Sprache**: Dart
+- **State Management**: Riverpod (`flutter_riverpod`)
+- **Navigation / Routing**: `go_router`
+- **Backend**: Supabase ist für ein späteres Backend-Inkrement geplant, aber aktuell noch nicht integriert.
+
+### Build- und Test-Befehle
+- `flutter analyze`
+- `flutter test`
+- `flutter run`
 
 ## Dateien
 
