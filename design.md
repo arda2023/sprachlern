@@ -144,7 +144,7 @@ Weitere Regeln:
 
 - **Bildschirm**: 375 px breit. Inhaltsbreite = **343 px** (375 − 2 × 16).
 - **Top-Bar**: 44 px hoch (unter der Statusleiste). Zurück-Pfeil links (24 px Icon, 16 px vom Rand), Titel zentriert, Aktions-Icon rechts (Menü ⋮, Hilfe ?, Plus, Filter).
-- **Bottom-Navigation**: 49 px Leiste + 34 px Home-Indicator-Bereich. Trennlinie oben 1 px `--surface`.
+- **Bottom-Navigation**: 57 px Leiste + 34 px Home-Indicator-Bereich. Trennlinie oben 1 px `--surface`. (Höhe korrigiert von 49 px, Begründung siehe 5.1.)
 - **Zwei-Spalten-Raster**: 2 × **163 px**, Lücke **16 px** (Stat-Karten, Inhalte-Kacheln).
 - **Vertikale Rhythmik** Startseite: Sektionskopf → 8 px → Karte; Karte → 16 px → nächste Karte; Ende Sektion → 24–32 px → nächster Kopf.
 
@@ -184,7 +184,8 @@ Weitere Regeln:
 
 ### 5.1 Bottom-Navigation (fünf Slots, ohne Beschriftung der Mitte)
 
-- Leiste: Höhe 49 px + Safe Area, Hintergrund `--bg`, Trennlinie 1 px `--surface` am oberen Rand.
+- Leiste: Höhe **57 px** + Safe Area, Hintergrund `--bg`, Trennlinie 1 px `--surface` am oberen Rand.
+  - *Korrigiert von ursprünglich 49 px.* Die 49 px fassen Trennlinie 1 + Icon 28 + Abstand 4 + Label 14 exakt aus, lassen also keine Luft unter der Trennlinie. Die Leiste setzt sich jetzt zusammen aus 1 px Trennlinie + 8 px Abstand + 48 px Inhalt. Erst dieser Abstand erlaubt es, den Kreismittelpunkt wie unten gefordert auf die Leistenoberkante zu legen: Der Ringboden liegt dann 36,5 px unter der Oberkante, das Label „Lernen" beginnt bei 42 px und bleibt damit frei sichtbar.
 - 5 gleich breite Slots à 75 px: **Hauptseite · Inhalte · [Lernen] · Fortschritte · Konto**.
 - Icon 28 px über Label (`caption` 12/14), Abstand 4 px.
 - **Aktiv**: Icon und Label `--lilac`. **Inaktiv**: `--white`.

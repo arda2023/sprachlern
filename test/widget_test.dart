@@ -15,6 +15,25 @@ void main() {
     expect(find.byKey(const ValueKey('nav_4')), findsOneWidget);
   });
 
+  testWidgets('Lernen-Label ist sichtbar und nicht verdeckt', (tester) async {
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lernen'), findsOneWidget);
+
+    // Label must sit clear of the ring (diameter 73, centred on the bar edge).
+    final label = tester.getRect(find.text('Lernen'));
+    final ring = tester.getRect(find.byKey(const ValueKey('nav_ring')));
+    expect(label.top, greaterThanOrEqualTo(ring.bottom));
+
+    // Same baseline as the other four tab labels.
+    expect(label.top, equals(tester.getRect(find.text('Inhalte')).top));
+  });
+
   testWidgets('Tab-Taps wechseln den aktiven Screen', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: MyApp()));
     await tester.pumpAndSettle();

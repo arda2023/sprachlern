@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:sprachlern/router/app_router.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 
@@ -15,6 +16,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Sprachlern',
       routerConfig: appRouter,
+      builder: (context, child) => FTheme(
+        data: FTheme.neutral.dark.touch,
+        child: child!,
+      ),
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.bg,
         colorScheme: ColorScheme.dark(

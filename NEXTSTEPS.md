@@ -1,24 +1,21 @@
-# NEXTSTEPS – Token- und Designanpassungen
+# NEXTSTEPS – Bottom-Nav Icons an Screenshot angepasst
 
 ## Erledigt
-- Token `AppColors.flagBorder` (`#3A475F`) hinzugefügt und in `HomeHeader` eingesetzt.
-- `ProgressStatCard` formatiert `wordsBase` mit Tausenderpunkt (`93 % von 1.433`).
-- Intrinsische Höhe von `ProgressStatCard` verifiziert (kein Overflow).
-- Tests in `theme_tokens_test.dart` und `home_screen_test.dart` aktualisiert.
+- Mitten-Icon im „Lernen"-Kreis: `FLucideIcons.circleArrowRight` -> `FLucideIcons.arrowRight` (einfacher Pfeil).
+- „Fortschritte"-Icon: `FLucideIcons.barChart` -> `FLucideIcons.chartNoAxesColumn` (achsenlose Balken).
+- Größen und Farben unverändert.
 
 ## Geänderte Dateien
-- `lib/theme/app_colors.dart`
-- `lib/widgets/home_header.dart`
-- `lib/widgets/progress_stat_card.dart`
-- `test/theme_tokens_test.dart`
-- `test/home_screen_test.dart`
+- `lib/navigation/bottom_nav_shell.dart` (2 Zeilen)
 
 ## Testergebnis
 - `flutter analyze`: No issues found.
-- `flutter test`: 11/11 bestanden.
+- `flutter test`: 12/12 bestanden, Assertions unverändert.
 
 ## Abweichungen
-- Keine.
+- Keine. `arrowRight` existiert in forui_lucide 0.27.0, der `play`-Fallback war nicht nötig.
 
 ## Offene Probleme
-- Keine.
+- Nicht im Simulator/Browser gegen den Screenshot geprüft (nur Widget-Tests).
+- Ring weiterhin statisch `--surface` (0 %); Tagesfortschritt-Bogen in `--lilac` fehlt noch.
+- `FLocalizations`-Delegates noch nicht ergänzt (erst mit dem ersten `F*`-Widget nötig).
