@@ -237,12 +237,12 @@ Aufbau von oben nach unten, alles auf **einer** Karte (`--surface`, Radius 12, P
    - **Lücke gefüllt**: gleiche Fläche `--field`, das eingesetzte Wort in `--cyan` (Serif). Beim Tippen gibt es keinen Abgleich mit der Lösung.
    - **Rahmen**: 2 px (wie der Fehler-Rahmen in 3.4), im Grundzustand in `--field` und damit unsichtbar, damit ein farbiger Rahmen nichts verschiebt. Radius bleibt 6.
    - **Nach falscher Bestätigung**: Rahmen `--error`. Rechts neben der Eingabe ein Teilhinweis in `--error` mit 40 % Deckkraft (wie Deaktiviert in 5.12), Serif wie der Satz: nach dem ersten Fehlversuch die ersten zwei Zeichen + "..." ("Fr..." für "Fruit"; bei Wörtern unter 3 Zeichen nur das erste), ab dem zweiten die ganze Lösung. Wird die Eingabe geändert, verschwinden Rahmen und Hinweis bis zur nächsten Bestätigung.
-   - **Lösung erfahren**: Die leere Lücke zeigt das Zielwort in `--cyan` mit 40 % Deckkraft, ohne Cursor und ohne Rot: Hilfe, keine Wertung. Das Feld wird nicht befüllt; beim Tippen verschwindet das Wort.
+   - **Lösung erfahren**: Die leere Lücke zeigt das Zielwort in `--cyan` mit 40 % Deckkraft, ohne Cursor und ohne Rot. Das Feld wird nicht befüllt; beim Tippen verschwindet das Wort. Die Karte gilt für die Wiederholung als nicht gewusst (wie ein erster Fehlversuch, einmal pro Karte); die Hinweisstufen zählt das Aufdecken nicht mit.
    - **Richtig bestätigt**: Rahmen `--success`, das Wort bleibt `--cyan`, die Lücke ist nicht mehr editierbar.
 3. **Grammatik-Hinweis-Zeile**: Text `body` (Weiß), Chevron `›` rechts, Fläche transparent auf der Karte. Ein Tap öffnet ein Bottom Sheet mit der Erklärung.
 4. Darunter eine **separate Übersetzungs-Karte** (`--surface`, Radius 12, Padding 16, Abstand 16): Kopf mit deutschem Wort (`title`) und Chevron `⌃/⌄` zum Auf-/Zuklappen, im Körper der deutsche Beispielsatz (`body`, Weiß).
 5. **Eingabezeile** direkt über der Tastatur: Fläche `--surface`, Höhe 47, links Mikrofon-Icon 24, rechts ein Aktions-Button (Pill, Höhe 30, Padding 0 16, `title`) mit drei Zuständen, abgeleitet aus der Lücke:
-   - **Lücke leer**: "Wort erfahren" (`--surface-2`, Text Weiß). Zeigt die Lösung (siehe "Lösung erfahren"); kein Versuch, kein Kartenwechsel.
+   - **Lücke leer**: "Wort erfahren" (`--surface-2`, Text Weiß). Zeigt die Lösung (siehe "Lösung erfahren"); kein Kartenwechsel.
    - **Text eingegeben**: "Eingeben" als Primär-Pill (5.12: Weiß, Text `--text-on-light`). Prüft die Eingabe (ohne Groß-/Kleinschreibung, getrimmt).
    - **Richtig bestätigt**: "Weiter" als Primär-Pill, links daneben (Abstand 8) ein Kreis-Icon Ø 22 in `--success` mit weißem `✓` (wie 5.9). Erst dieser Tipp wechselt die Karte.
    - Die Eingabetaste der Tastatur löst dieselbe Aktion aus. Während "Weiter" das Ergebnis speichert, ist der Button deaktiviert (40 %).

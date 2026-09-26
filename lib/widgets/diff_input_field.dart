@@ -29,7 +29,8 @@ class DiffInputField extends StatefulWidget {
   final int attemptCount;
 
   /// "Wort erfahren" was tapped: while empty, the gap shows the answer dimmed
-  /// in cyan. It is help, not a verdict, so nothing turns red.
+  /// in cyan. Nothing turns red — revealing is not shown as an error, even
+  /// though the card is scored as not known.
   final bool solutionRevealed;
 
   /// The answer was confirmed correct: green frame, input locked.

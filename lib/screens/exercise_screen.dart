@@ -29,10 +29,12 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   /// Wrong confirmations on this card.
   int _attemptCount = 0;
 
-  /// submitAnswer(false) was sent for this card: the first attempt decided.
+  /// submitAnswer(false) was sent for this card, by the first miss or by
+  /// "Wort erfahren": the card is decided as not known.
   bool _firstAttemptWasWrong = false;
 
-  /// "Wort erfahren" was tapped; help only, not an attempt.
+  /// "Wort erfahren" was tapped. Scored as not known, but not an attempt for
+  /// the hint stages.
   bool _solutionRevealed = false;
 
   /// The last confirmation was wrong and the input is unchanged since.
@@ -70,13 +72,23 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   void _runAction(ExerciseData exercise) {
     switch (_action) {
       case ExerciseAction.revealWord:
-        // Help only: no attempt, no scoring, no card change.
-        setState(() => _solutionRevealed = true);
+        _reveal();
       case ExerciseAction.submit:
         _confirm(exercise);
       case ExerciseAction.next:
         _next();
     }
+  }
+
+  /// Shows the answer. It was not recalled from memory, so SM-2 gets false —
+  /// once per card, like a first miss. No red, no card change.
+  void _reveal() {
+    final isFirstMiss = !_firstAttemptWasWrong;
+    setState(() {
+      _solutionRevealed = true;
+      _firstAttemptWasWrong = true;
+    });
+    if (isFirstMiss) _submit(false);
   }
 
   void _confirm(ExerciseData exercise) {
@@ -179,9 +191,17 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   Widget _buildExercise(ExerciseData exercise) {
     return Scaffold(
       backgroundColor: AppColors.bg,
-      bottomNavigationBar: ExerciseInputBar(
-        action: _action,
-        onAction: _advancing ? null : () => _runAction(exercise),
+      // Lifted by the keyboard height, the bar sits directly above the
+      // keyboard (5.7). As the bottom widget it also keeps snack bars above
+      // itself; inside the body a snack bar would cover the button.
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: ExerciseInputBar(
+          action: _action,
+          onAction: _advancing ? null : () => _runAction(exercise),
+        ),
       ),
       body: SafeArea(
         bottom: false,

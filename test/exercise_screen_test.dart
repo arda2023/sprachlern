@@ -14,6 +14,7 @@ import 'package:sprachlern/services/exercise_repository.dart';
 import 'package:sprachlern/services/supabase_client.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
 import 'package:sprachlern/theme/app_colors.dart';
+import 'package:sprachlern/widgets/exercise_input_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'helpers/stack_fixtures.dart';
@@ -146,7 +147,7 @@ Future<void> _solveFirstCard(WidgetTester tester) async {
 
 void main() {
   testWidgets(
-    'Fall 1: leeres Feld – "Wort erfahren" zeigt Lösung ohne Wertung',
+    'Fall 1: leeres Feld – "Wort erfahren" zeigt Lösung ohne Rot, wertet false',
     (tester) async {
       final repository = await _pumpExercise(tester);
       expect(_actionLabel(tester), 'Wort erfahren');
@@ -160,9 +161,34 @@ void main() {
       expect(solution.style!.color, AppColors.cyan.withValues(alpha: 0.4));
       expect(_frameColor(tester), isNot(AppColors.error));
       expect(_hint(tester), isNull);
-      expect(repository.submittedAnswers, isEmpty);
+      // Not recalled from memory: SM-2 gets false, once.
+      expect(repository.submittedAnswers, [
+        (stackWordId: 'word-1', correct: false),
+      ]);
       expect(_onCard('word-1'), isTrue);
       expect(_actionLabel(tester), 'Wort erfahren');
+
+      await _tapAction(tester);
+      expect(repository.submittedAnswers, hasLength(1));
+    },
+  );
+
+  testWidgets(
+    'Wort erfahren, danach richtig – "Weiter" wechselt ohne true-Aufruf',
+    (tester) async {
+      final repository = await _pumpExercise(tester);
+
+      await _tapAction(tester);
+      await _type(tester, 'Fruit');
+      await _tapAction(tester);
+      expect(_actionLabel(tester), 'Weiter');
+
+      await _tapAction(tester);
+
+      expect(repository.submittedAnswers, [
+        (stackWordId: 'word-1', correct: false),
+      ]);
+      expect(_onCard('word-2'), isTrue);
     },
   );
 
@@ -311,6 +337,22 @@ void main() {
       (stackWordId: 'word-1', correct: false),
       (stackWordId: 'word-2', correct: false),
     ]);
+  });
+
+  testWidgets('Eingabezeile sitzt direkt über der Tastatur (5.7)', (
+    tester,
+  ) async {
+    await _pumpExercise(tester);
+    const keyboardHeight = 300.0;
+    tester.view.viewInsets = const FakeViewPadding(bottom: keyboardHeight);
+    await tester.pumpAndSettle();
+
+    const keyboardTop = 812 - keyboardHeight;
+    expect(tester.getRect(find.byType(ExerciseInputBar)).bottom, keyboardTop);
+    expect(
+      tester.getRect(find.byKey(const ValueKey('exercise_action'))).bottom,
+      lessThanOrEqualTo(keyboardTop),
+    );
   });
 
   testWidgets('Eingabetaste der Tastatur löst dieselbe Aktion aus', (
