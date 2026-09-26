@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:forui/assets.dart';
 import 'package:sprachlern/models/content_data.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
+import 'package:sprachlern/widgets/difficulty_indicator.dart';
 
 class StackListItem extends StatelessWidget {
-  const StackListItem({super.key, required this.stack});
+  const StackListItem({super.key, required this.stack, this.onTap});
 
   final VocabularyStackData stack;
+  final VoidCallback? onTap;
 
   static const _height = 72.0;
   static const _iconTileSize = 40.0;
   static const _iconSize = 24.0;
-  static const _boltSize = 14.0;
   static const _progressWidth = 100.0;
   static const _progressHeight = 8.0;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       height: _height,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       decoration: BoxDecoration(
@@ -50,7 +50,7 @@ class StackListItem extends StatelessWidget {
                   style: AppTextStyles.title.copyWith(color: AppColors.white),
                 ),
                 const SizedBox(height: AppSpacing.s4),
-                _DifficultyIndicator(level: stack.difficultyLevel),
+                DifficultyIndicator(level: stack.difficultyLevel),
                 if (stack.progress case final progress?) ...[
                   const SizedBox(height: AppSpacing.s4),
                   _StackProgressBar(progress: progress, title: stack.title),
@@ -61,33 +61,14 @@ class StackListItem extends StatelessWidget {
         ],
       ),
     );
-  }
-}
 
-class _DifficultyIndicator extends StatelessWidget {
-  const _DifficultyIndicator({required this.level});
+    if (onTap == null) return card;
 
-  final int level;
-
-  @override
-  Widget build(BuildContext context) {
-    final filledBolts = level.clamp(0, 3);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        3,
-        (index) => Padding(
-          padding: EdgeInsets.only(right: index == 2 ? 0 : AppSpacing.s16),
-          child: Icon(
-            FLucideIcons.bolt,
-            size: StackListItem._boltSize,
-            color: index < filledBolts
-                ? AppColors.iconBolt
-                : AppColors.iconBoltOff,
-          ),
-        ),
-      ),
+    return GestureDetector(
+      key: ValueKey('stack_item_${stack.id}'),
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: card,
     );
   }
 }

@@ -7,7 +7,9 @@ import 'package:sprachlern/screens/grammar_exercise_screen.dart';
 import 'package:sprachlern/screens/home_screen.dart';
 import 'package:sprachlern/screens/learn_screen.dart';
 import 'package:sprachlern/screens/progress_screen.dart';
+import 'package:sprachlern/screens/stack_detail_screen.dart';
 import 'package:sprachlern/screens/stack_list_screen.dart';
+import 'package:sprachlern/screens/stack_revue_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
@@ -51,6 +53,17 @@ final appRouter = GoRouter(
       path: '/grammar-exercise',
       builder: (_, _) => const GrammarExerciseScreen(),
     ),
-    GoRoute(path: '/stacks', builder: (_, _) => const StackListScreen()),
+    GoRoute(
+      path: '/stacks',
+      builder: (_, _) => const StackListScreen(),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (_, state) =>
+              StackDetailScreen(stackId: state.pathParameters['id']!),
+        ),
+      ],
+    ),
+    GoRoute(path: '/stack-revue', builder: (_, _) => const StackRevueScreen()),
   ],
 );

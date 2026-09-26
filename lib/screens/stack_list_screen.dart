@@ -46,7 +46,11 @@ class StackListScreen extends ConsumerWidget {
                   if (index == 0) {
                     return const SectionHeader('DEINE STAPEL');
                   }
-                  return StackListItem(stack: stacks[index - 1]);
+                  final stack = stacks[index - 1];
+                  return StackListItem(
+                    stack: stack,
+                    onTap: () => context.push('/stacks/${stack.id}'),
+                  );
                 },
               ),
             ),
