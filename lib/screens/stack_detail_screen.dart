@@ -139,7 +139,7 @@ class _StackDetailBody extends StatelessWidget {
           const SizedBox(height: AppSpacing.s16),
           _PrimaryButton(
             label: 'Lerne mit diesem Stapel',
-            onPressed: () => context.push('/exercise'),
+            onPressed: () => context.push('/stacks/${detail.stack.id}/exercise'),
           ),
           const SizedBox(height: AppSpacing.s24),
           RecentWordsCard(entries: detail.recentWords),

@@ -101,7 +101,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(path: '/exercise', builder: (_, _) => const ExerciseScreen()),
       GoRoute(
         path: '/grammar-exercise',
         builder: (_, _) => const GrammarExerciseScreen(),
@@ -136,6 +135,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: ':id',
             builder: (_, state) =>
                 StackDetailScreen(stackId: state.pathParameters['id']!),
+            routes: [
+              GoRoute(
+                path: 'exercise',
+                builder: (_, state) =>
+                    ExerciseScreen(stackId: state.pathParameters['id']!),
+              ),
+            ],
           ),
         ],
       ),

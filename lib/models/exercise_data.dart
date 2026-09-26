@@ -1,4 +1,4 @@
-/// Immutable mock data for one vocabulary fill-in-the-blank exercise.
+/// Immutable token data for one vocabulary fill-in-the-blank exercise.
 class ExerciseToken {
   const ExerciseToken({
     required this.text,
@@ -13,6 +13,7 @@ class ExerciseToken {
 
 class ExerciseData {
   const ExerciseData({
+    this.stackWordId,
     required this.tokens,
     required this.wordStatus,
     required this.targetAnswer,
@@ -24,6 +25,7 @@ class ExerciseData {
     required this.grammarHintDescription,
   });
 
+  final String? stackWordId;
   final List<ExerciseToken> tokens;
   final int wordStatus;
   final String targetAnswer;

@@ -77,7 +77,9 @@ class _StackRevueScreenState extends ConsumerState<StackRevueScreen> {
                     }
                     return RevueStackRow(
                       stack: stacks[index - 1],
-                      onPlay: () => context.push('/exercise'),
+                      onPlay: () => context.push(
+                        '/stacks/${stacks[index - 1].id}/exercise',
+                      ),
                     );
                   },
                 ),

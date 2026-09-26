@@ -1,20 +1,25 @@
 # NEXTSTEPS
 
 ## Erledigt
-- Nach jeder Auswahl ersetzt die als korrekt markierte Option das erste `___` im Satz.
-- Falsche Antworten behalten ihr rotes Feedback, während der Satz die richtige Lösung zeigt.
-- Der vorhandene Text-Link „Weiter“ erscheint nach richtiger und falscher Auswahl.
-- `nextCard` wechselt zyklisch zur nächsten Karte und löscht die Auswahl, wodurch Optionen wieder reagieren.
-- Zwei Regressionstests ergänzen falsche Auswahl/korrekte Lösung und den Weiter-Fluss samt Entsperren.
+- Erster Versuch: ausschließlich cyan, ohne rote Zeichen oder Lösung.
+- Nach Fehlbewertung: optimales Levenshtein-Alignment mit Einfügung, Löschung und Substitution.
+- Exakte Eingabe und einzelne reine Einfügung: ausschließlich cyan, ohne Lösung.
+- Leeres Feld zeigt in beiden Zuständen nur den Cursor.
+- ExerciseScreen hält attemptFailed pro Karte; neue Karten starten mit false.
 
 ## Geänderte Dateien
-- `lib/screens/grammar_exercise_screen.dart`
-- `lib/providers/grammar_exercise_provider.dart` (Kommentar zum bestehenden Weiter-/Auto-Weiter-Fluss)
-- `test/grammar_exercise_screen_test.dart`
-- `test/grammar_screens_test.dart` (bestehende Erwartungen an neue Satz-/Weiter-Anzeige angepasst)
-## Testergebnis, Abweichungen, offene Probleme
-- `flutter analyze`: No issues found! (ran in 1.8s)
-- `flutter test`: 00:03 +61: All tests passed!
-- Die vorhandenen drei Mock-Karten und der Text-Link nach design.md 5.12 wurden wiederverwendet; keine neue Datenstruktur oder UI-Komponente nötig.
-- `grammar_answer_option.dart` blieb unverändert, da der Auswahl-Guard laut vorigem Increment ausschließlich im Notifier liegt.
-- Bekannte `google_fonts`-Asset-Hinweise erscheinen auf stderr; die Suite endet erfolgreich mit Exit-Code 0. Offene Probleme: keine.
+- `lib/widgets/diff_input_field.dart`, `lib/widgets/fill_in_card.dart`, `lib/screens/exercise_screen.dart`
+- `test/diff_input_field_test.dart`, `test/exercise_screen_test.dart`
+- `NEXTSTEPS.md`
+
+## Testergebnis
+- `flutter analyze`: No issues found! (ran in 1.8s).
+- Beide Testdateien mit --reporter expanded --concurrency=1: 00:02 +22: All tests passed!
+- 15 Feldtests und 7 Screen-Tests; alle vier Akzeptanzfälle einzeln im Output sichtbar.
+- Screen-Tests bestätigen Reset pro Karte und submitAnswer(false) trotz tolerierter Einfügung.
+
+## Abweichungen und offene Probleme
+- Schritt 6 erfordert zusätzlich FillInCard-/ExerciseScreen-Anpassungen und Screen-Tests.
+- Bei Konflikten erscheint die volle Lösung gemäß Akzeptanzfall understandd; bei reinen Lücken der fehlende Teil.
+- Bestehender Ablauf wechselt nach 700 ms und Speicherung auch bei falscher Antwort zur nächsten Karte.
+- Es wurde kein zusätzlicher Wiederholungsablauf eingeführt; submit_answer und SM-2 bleiben unverändert.

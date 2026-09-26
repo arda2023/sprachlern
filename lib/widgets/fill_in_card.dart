@@ -4,25 +4,24 @@ import 'package:sprachlern/models/exercise_data.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
+import 'package:sprachlern/widgets/diff_input_field.dart';
 
 class FillInCard extends StatelessWidget {
   const FillInCard({
     super.key,
     required this.exercise,
-    required this.answer,
-    required this.onBlankTap,
+    required this.attemptFailed,
+    required this.onAnswerChanged,
+    required this.onAnswerSubmitted,
     required this.onGrammarHintTap,
   });
 
   final ExerciseData exercise;
-  final String? answer;
-  final VoidCallback onBlankTap;
+  final bool attemptFailed;
+  final ValueChanged<String> onAnswerChanged;
+  final ValueChanged<String> onAnswerSubmitted;
   final VoidCallback onGrammarHintTap;
 
-  static const _blankMinWidth = 100.0;
-  static const _blankHeight = 32.0;
-  static const _cursorWidth = 2.0;
-  static const _cursorHeight = 24.0;
   static const _statusWidth = 16.0;
   static const _statusHeight = 4.0;
 
@@ -47,7 +46,13 @@ class FillInCard extends StatelessWidget {
             children: exercise.tokens
                 .map(
                   (token) => token.isBlank
-                      ? _Blank(answer: answer, onTap: onBlankTap)
+                      ? DiffInputField(
+                          key: ValueKey('diff_input_${exercise.stackWordId}'),
+                          targetAnswer: exercise.targetAnswer,
+                          attemptFailed: attemptFailed,
+                          onChanged: onAnswerChanged,
+                          onSubmitted: onAnswerSubmitted,
+                        )
                       : _TranslatableToken(token: token),
                 )
                 .toList(),
@@ -146,47 +151,6 @@ class _TranslatableToken extends StatelessWidget {
         button: true,
         label: '${token.text}: Übersetzung anzeigen',
         child: Text(token.text, style: textStyle),
-      ),
-    );
-  }
-}
-
-class _Blank extends StatelessWidget {
-  const _Blank({required this.answer, required this.onTap});
-
-  final String? answer;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isFilled = answer != null && answer!.isNotEmpty;
-
-    return Semantics(
-      button: true,
-      label: isFilled ? 'Ausgefüllte Lücke: $answer' : 'Lücke ausfüllen',
-      child: GestureDetector(
-        key: const ValueKey('exercise_blank'),
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(
-            minWidth: FillInCard._blankMinWidth,
-          ),
-          height: FillInCard._blankHeight,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            color: AppColors.field,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusBadge),
-          ),
-          child: isFilled
-              ? Text(answer!, style: AppTextStyles.sentence)
-              : Container(
-                  key: const ValueKey('exercise_blank_cursor'),
-                  width: FillInCard._cursorWidth,
-                  height: FillInCard._cursorHeight,
-                  color: AppColors.cyan,
-                ),
-        ),
       ),
     );
   }
