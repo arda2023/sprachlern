@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sprachlern/main.dart';
+import 'package:sprachlern/providers/auth_provider.dart';
+
+import 'helpers/fake_auth_service.dart';
+
+/// The app now sends signed-out users to /login, so these shell tests run
+/// with a signed-in fake session.
+Widget _signedInApp() => ProviderScope(
+  overrides: [
+    authServiceProvider.overrideWithValue(FakeAuthService(signedIn: true)),
+  ],
+  child: const MyApp(),
+);
 
 void main() {
   testWidgets('Bottom-Nav zeigt alle 5 Slots', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+    await tester.pumpWidget(_signedInApp());
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('nav_0')), findsOneWidget);
@@ -20,7 +32,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+    await tester.pumpWidget(_signedInApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Lernen'), findsOneWidget);
@@ -34,8 +46,10 @@ void main() {
     expect(label.top, equals(tester.getRect(find.text('Inhalte')).top));
   });
 
-  testWidgets('Tab-Taps wechseln den aktiven Screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+  testWidgets('Tab-Taps wechseln den aktiven Screen', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_signedInApp());
     await tester.pumpAndSettle();
 
     // Initial: branch 0 (Hauptseite)

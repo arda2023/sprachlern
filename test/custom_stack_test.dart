@@ -2,9 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sprachlern/models/custom_stack_data.dart';
+import 'package:sprachlern/providers/auth_provider.dart';
+import 'package:sprachlern/providers/custom_stack_provider.dart';
 import 'package:sprachlern/screens/add_words_screen.dart';
 import 'package:sprachlern/screens/custom_stack_screen.dart';
+import 'package:sprachlern/services/custom_stack_repository.dart';
 import 'package:sprachlern/widgets/custom_stack_card_row.dart';
+
+/// In-memory stand-in for Supabase: it outlives a [ProviderScope], so a fresh
+/// scope over the same instance behaves like an app restart.
+class _FakeCustomStackRepository implements CustomStackRepository {
+  _FakeCustomStackRepository([List<CustomStackCard> cards = const []])
+    : cards = [...cards];
+
+  static const stackId = 'stack-1';
+
+  final List<CustomStackCard> cards;
+  final insertedInto = <String>[];
+  int _nextId = 0;
+
+  @override
+  Future<({String id, CustomStack stack})> loadStack() async =>
+      (id: stackId, stack: CustomStack(cards: await fetchCards(stackId)));
+
+  @override
+  Future<List<CustomStackCard>> fetchCards(String stackId) async =>
+      List.of(cards);
+
+  @override
+  Future<List<CustomStackCard>> insertCards(
+    String stackId,
+    List<CustomStackCard> newCards,
+  ) async {
+    insertedInto.add(stackId);
+    final saved = [
+      for (final card in newCards)
+        CustomStackCard(
+          id: 'db-${_nextId++}',
+          targetWord: card.targetWord,
+          germanSentence: card.germanSentence,
+        ),
+    ];
+    cards.addAll(saved);
+    return saved;
+  }
+}
 
 GoRouter _router() => GoRouter(
   initialLocation: '/custom-stack',
@@ -12,20 +55,31 @@ GoRouter _router() => GoRouter(
     GoRoute(
       path: '/custom-stack',
       builder: (_, _) => const CustomStackScreen(),
-      routes: [
-        GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen()),
-      ],
+      routes: [GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen())],
     ),
   ],
 );
 
-Future<void> _pumpFlow(WidgetTester tester) async {
+/// The stack now loads per signed-in user from the repository, so the flow
+/// runs with a fixed user id and an in-memory repository instead of Supabase.
+Future<void> _pumpFlow(
+  WidgetTester tester, {
+  _FakeCustomStackRepository? repository,
+}) async {
   tester.view.physicalSize = const Size(375, 900);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp.router(routerConfig: _router())),
+    ProviderScope(
+      overrides: [
+        currentUserIdProvider.overrideWithValue('test-user'),
+        customStackRepositoryProvider.overrideWithValue(
+          repository ?? _FakeCustomStackRepository(),
+        ),
+      ],
+      child: MaterialApp.router(routerConfig: _router()),
+    ),
   );
   await tester.pumpAndSettle();
 }
@@ -128,5 +182,42 @@ void main() {
     // Longest-word heuristic, punctuation ignored.
     expect(rows[0].card.targetWord, 'machst');
     expect(rows[1].card.targetWord, 'keine');
+  });
+
+  testWidgets('Lädt den gespeicherten Stapel und speichert neue Karten', (
+    tester,
+  ) async {
+    final repository = _FakeCustomStackRepository([
+      const CustomStackCard(
+        id: 'db-existing',
+        targetWord: 'Brot',
+        germanSentence: 'Ich kaufe Brot.',
+      ),
+    ]);
+    await _pumpFlow(tester, repository: repository);
+
+    // The existing card comes from the repository, not from memory.
+    expect(find.text('Karten: 1'), findsOneWidget);
+    expect(find.text('Brot'), findsOneWidget);
+
+    await _addEntries(tester, 'Essen;Gemüse', textMode: false);
+
+    expect(find.text('Karten: 3'), findsOneWidget);
+    expect(repository.insertedInto, [_FakeCustomStackRepository.stackId]);
+    expect(repository.cards.map((c) => c.targetWord), [
+      'Brot',
+      'Essen',
+      'Gemüse',
+    ]);
+    // The state holds the stored rows, with database ids.
+    final ids = tester
+        .widgetList<CustomStackCardRow>(find.byType(CustomStackCardRow))
+        .map((row) => row.card.id);
+    expect(ids, ['db-existing', 'db-0', 'db-1']);
+
+    // A fresh scope over the same repository, i.e. an app restart.
+    await tester.pumpWidget(const SizedBox());
+    await _pumpFlow(tester, repository: repository);
+    expect(find.text('Karten: 3'), findsOneWidget);
   });
 }
