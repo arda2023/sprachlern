@@ -10,17 +10,10 @@ final exerciseRepositoryProvider = Provider<ExerciseRepository>(
 );
 
 class ExerciseSession {
-  const ExerciseSession({
-    required this.cards,
-    this.currentIndex = 0,
-    this.isSubmitting = false,
-    this.submitError,
-  });
+  const ExerciseSession({required this.cards, this.currentIndex = 0});
 
   final List<ExerciseData> cards;
   final int currentIndex;
-  final bool isSubmitting;
-  final String? submitError;
 
   ExerciseData? get currentExercise =>
       currentIndex < cards.length ? cards[currentIndex] : null;
@@ -61,39 +54,22 @@ class ExerciseNotifier extends AsyncNotifier<ExerciseSession> {
     }
   }
 
+  /// Scores the current card (SM-2 runs in `submit_answer`). It does not move
+  /// on: the card changes only on an explicit "Weiter", via [nextCard].
   Future<void> submitAnswer(bool correct) async {
-    final session = state.asData?.value;
-    final exercise = session?.currentExercise;
-    if (session == null || exercise == null || session.isSubmitting) return;
+    final wordId = state.asData?.value.currentExercise?.stackWordId;
+    if (wordId != null) await _repository.submitAnswer(wordId, correct);
+  }
 
+  void nextCard() {
+    final session = state.asData?.value;
+    if (session == null || session.currentExercise == null) return;
     state = AsyncData(
       ExerciseSession(
         cards: session.cards,
-        currentIndex: session.currentIndex,
-        isSubmitting: true,
+        currentIndex: session.currentIndex + 1,
       ),
     );
-    try {
-      final wordId = exercise.stackWordId;
-      if (wordId != null) await _repository.submitAnswer(wordId, correct);
-      if (!ref.mounted) return;
-      state = AsyncData(
-        ExerciseSession(
-          cards: session.cards,
-          currentIndex: session.currentIndex + 1,
-        ),
-      );
-    } catch (error) {
-      if (!ref.mounted) return;
-      state = AsyncData(
-        ExerciseSession(
-          cards: session.cards,
-          currentIndex: session.currentIndex,
-          submitError: 'Die Antwort konnte nicht gespeichert werden.',
-        ),
-      );
-      rethrow;
-    }
   }
 
   static ExerciseData _exerciseFromRow(

@@ -3,19 +3,38 @@ import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
 
-/// A keyboard input that reveals aligned feedback after a failed attempt.
+/// The gap of the fill-in card (design.md 5.7). Typed text is plain cyan;
+/// feedback appears only after an answer was confirmed — nothing is compared
+/// while typing.
 class DiffInputField extends StatefulWidget {
   const DiffInputField({
     super.key,
     required this.targetAnswer,
-    required this.attemptFailed,
+    required this.isWrong,
+    required this.attemptCount,
+    required this.solutionRevealed,
+    required this.isCorrect,
     required this.onChanged,
     this.onSubmitted,
     this.focusNode,
   });
 
   final String targetAnswer;
-  final bool attemptFailed;
+
+  /// The last confirmation was wrong and the input is unchanged since: red
+  /// frame plus a partial hint whose length depends on [attemptCount].
+  final bool isWrong;
+
+  /// Wrong confirmations on this card so far.
+  final int attemptCount;
+
+  /// "Wort erfahren" was tapped: while empty, the gap shows the answer dimmed
+  /// in cyan. It is help, not a verdict, so nothing turns red.
+  final bool solutionRevealed;
+
+  /// The answer was confirmed correct: green frame, input locked.
+  final bool isCorrect;
+
   final ValueChanged<String> onChanged;
   final ValueChanged<String>? onSubmitted;
   final FocusNode? focusNode;
@@ -28,6 +47,18 @@ class _DiffInputFieldState extends State<DiffInputField> {
   late final TextEditingController _controller;
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
+
+  // design.md 5.7: the gap and its cursor.
+  static const double _minWidth = 100.0;
+  static const double _minHeight = 32.0;
+  static const double _cursorWidth = 2.0;
+  static const double _cursorHeight = 24.0;
+
+  // design.md 3.4: feedback frame, as in the error frame pattern.
+  static const double _frameWidth = 2.0;
+
+  /// Hint and revealed answer are dimmed like a disabled element (5.12).
+  static const double _dimmedOpacity = 0.4;
 
   @override
   void initState() {
@@ -59,213 +90,117 @@ class _DiffInputFieldState extends State<DiffInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final isEmpty = _controller.text.isEmpty;
+    final showSolution = isEmpty && widget.solutionRevealed;
+    final hint = widget.isWrong
+        ? _hintFor(widget.targetAnswer, widget.attemptCount)
+        : null;
+    // In the gap's own colour the frame is invisible, so switching to red or
+    // green does not change the size.
+    final frameColor = widget.isWrong
+        ? AppColors.error
+        : widget.isCorrect
+        ? AppColors.success
+        : AppColors.field;
+
     return Container(
-      constraints: const BoxConstraints(minWidth: 100, minHeight: 32),
+      key: const ValueKey('diff_input_frame'),
+      constraints: const BoxConstraints(
+        minWidth: _minWidth,
+        minHeight: _minHeight,
+      ),
       decoration: BoxDecoration(
         color: AppColors.field,
         borderRadius: BorderRadius.circular(AppSpacing.radiusBadge),
+        border: Border.all(color: frameColor, width: _frameWidth),
       ),
       child: IntrinsicWidth(
-        child: Stack(
-          alignment: Alignment.centerLeft,
+        child: Row(
           children: [
-            TextField(
-              key: const ValueKey('diff_input_text_field'),
-              controller: _controller,
-              focusNode: _focusNode,
-              onChanged: (value) {
-                setState(() {});
-                widget.onChanged(value);
-              },
-              onSubmitted: widget.onSubmitted,
-              textInputAction: TextInputAction.done,
-              maxLines: 1,
-              cursorColor: AppColors.cyan,
-              cursorHeight: 24,
-              style: AppTextStyles.sentence.copyWith(
-                color: AppColors.cyan.withValues(alpha: 0),
-              ),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.s8,
-                  vertical: 0,
-                ),
-                isDense: true,
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: _controller.text.isEmpty
-                    ? const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: AppSpacing.s8),
-                          child: SizedBox(
-                            key: ValueKey('diff_input_cursor'),
-                            width: 2,
-                            height: 24,
-                            child: ColoredBox(color: AppColors.cyan),
-                          ),
-                        ),
-                      )
-                    : Padding(
+            Expanded(
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  TextField(
+                    key: const ValueKey('diff_input_text_field'),
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    readOnly: widget.isCorrect,
+                    onChanged: (value) {
+                      setState(() {});
+                      widget.onChanged(value);
+                    },
+                    onSubmitted: widget.onSubmitted,
+                    textInputAction: TextInputAction.done,
+                    maxLines: 1,
+                    cursorColor: AppColors.cyan,
+                    cursorHeight: _cursorHeight,
+                    style: AppTextStyles.sentence,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.s8,
+                      ),
+                      isDense: true,
+                    ),
+                  ),
+                  if (showSolution)
+                    // Not positioned: the revealed word sizes the gap.
+                    IgnorePointer(
+                      child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.s8,
                         ),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: RichText(
-                            key: const ValueKey('diff_input_overlay'),
-                            maxLines: 1,
-                            overflow: TextOverflow.visible,
-                            text: _diffText(
-                              _controller.text,
-                              widget.targetAnswer,
+                        child: Text(
+                          widget.targetAnswer,
+                          key: const ValueKey('diff_input_solution'),
+                          maxLines: 1,
+                          style: AppTextStyles.sentence.copyWith(
+                            color: AppColors.cyan.withValues(
+                              alpha: _dimmedOpacity,
                             ),
                           ),
                         ),
                       ),
+                    )
+                  else if (isEmpty)
+                    const Positioned(
+                      left: AppSpacing.s8,
+                      child: IgnorePointer(
+                        child: SizedBox(
+                          key: ValueKey('diff_input_cursor'),
+                          width: _cursorWidth,
+                          height: _cursorHeight,
+                          child: ColoredBox(color: AppColors.cyan),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+            if (hint != null)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.s8),
+                child: Text(
+                  hint,
+                  key: const ValueKey('diff_input_hint'),
+                  maxLines: 1,
+                  style: AppTextStyles.sentence.copyWith(
+                    color: AppColors.error.withValues(alpha: _dimmedOpacity),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
-
-  TextSpan _diffText(String input, String target) {
-    if (input.isEmpty) return const TextSpan(text: '');
-
-    if (!widget.attemptFailed) return _plainInput(input);
-
-    final entered = input.runes.map(String.fromCharCode).toList();
-    final answer = target.runes.map(String.fromCharCode).toList();
-    final alignment = _align(entered, answer);
-    if (alignment.distance == 0 ||
-        (alignment.distance == 1 &&
-            alignment.insertions == 1 &&
-            alignment.substitutions == 0 &&
-            alignment.missingAnswer.isEmpty)) {
-      return _plainInput(input);
-    }
-
-    final spans = <InlineSpan>[];
-    for (var i = 0; i < entered.length; i++) {
-      spans.add(
-        TextSpan(
-          text: entered[i],
-          style: AppTextStyles.sentence.copyWith(
-            color: alignment.matches[i] ? AppColors.cyan : AppColors.error,
-          ),
-        ),
-      );
-    }
-
-    // Incomplete matching input needs only the missing characters. Conflicting
-    // input gets the full solution, as in the reference's substitution example.
-    final hint = alignment.matches.every((match) => match)
-        ? alignment.missingAnswer.join()
-        : target;
-    if (hint.isNotEmpty) {
-      spans.add(
-        TextSpan(
-          text: hint,
-          style: AppTextStyles.sentence.copyWith(
-            color: AppColors.cyan.withValues(alpha: 0.4),
-          ),
-        ),
-      );
-    }
-    return TextSpan(children: spans);
-  }
-
-  TextSpan _plainInput(String input) => TextSpan(
-    text: input,
-    style: AppTextStyles.sentence.copyWith(color: AppColors.cyan),
-  );
 }
 
-class _Alignment {
-  const _Alignment({
-    required this.distance,
-    required this.matches,
-    required this.insertions,
-    required this.substitutions,
-    required this.missingAnswer,
-  });
-
-  final int distance;
-  final List<bool> matches;
-  final int insertions;
-  final int substitutions;
-  final List<String> missingAnswer;
-}
-
-_Alignment _align(List<String> entered, List<String> answer) {
-  final inputLower = entered.map((char) => char.toLowerCase()).toList();
-  final answerLower = answer.map((char) => char.toLowerCase()).toList();
-  final distances = List.generate(
-    entered.length + 1,
-    (_) => List.filled(answer.length + 1, 0),
-  );
-  for (var i = entered.length; i >= 0; i--) {
-    for (var j = answer.length; j >= 0; j--) {
-      if (i == entered.length) {
-        distances[i][j] = answer.length - j;
-      } else if (j == answer.length) {
-        distances[i][j] = entered.length - i;
-      } else {
-        final diagonal =
-            distances[i + 1][j + 1] + (inputLower[i] == answerLower[j] ? 0 : 1);
-        final insertion = distances[i + 1][j] + 1;
-        final deletion = distances[i][j + 1] + 1;
-        distances[i][j] = [
-          diagonal,
-          insertion,
-          deletion,
-        ].reduce((a, b) => a < b ? a : b);
-      }
-    }
-  }
-
-  final matches = List.filled(entered.length, false);
-  final missingAnswer = <String>[];
-  var insertions = 0;
-  var substitutions = 0;
-  var i = 0;
-  var j = 0;
-  // Recover an optimal path through the suffix-distance matrix. Prefer early
-  // matches so repeated trailing characters are marked as extra characters.
-  while (i < entered.length || j < answer.length) {
-    if (i < entered.length &&
-        j < answer.length &&
-        inputLower[i] == answerLower[j] &&
-        distances[i][j] == distances[i + 1][j + 1]) {
-      matches[i] = true;
-      i++;
-      j++;
-    } else if (i < entered.length &&
-        j < answer.length &&
-        distances[i][j] == distances[i + 1][j + 1] + 1) {
-      substitutions++;
-      missingAnswer.add(answer[j]);
-      i++;
-      j++;
-    } else if (i < entered.length &&
-        distances[i][j] == distances[i + 1][j] + 1) {
-      insertions++;
-      i++;
-    } else {
-      missingAnswer.add(answer[j]);
-      j++;
-    }
-  }
-  return _Alignment(
-    distance: distances[0][0],
-    matches: matches,
-    insertions: insertions,
-    substitutions: substitutions,
-    missingAnswer: missingAnswer,
-  );
+/// The first two characters after the first miss ("Fr..." for "Fruit"), just
+/// one for answers shorter than three; from the second miss the whole answer.
+String _hintFor(String answer, int attemptCount) {
+  if (attemptCount >= 2) return answer;
+  final characters = answer.characters;
+  return '${characters.take(characters.length >= 3 ? 2 : 1)}...';
 }

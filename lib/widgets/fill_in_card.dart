@@ -10,14 +10,22 @@ class FillInCard extends StatelessWidget {
   const FillInCard({
     super.key,
     required this.exercise,
-    required this.attemptFailed,
+    required this.isWrong,
+    required this.attemptCount,
+    required this.solutionRevealed,
+    required this.isCorrect,
     required this.onAnswerChanged,
     required this.onAnswerSubmitted,
     required this.onGrammarHintTap,
   });
 
   final ExerciseData exercise;
-  final bool attemptFailed;
+
+  // Feedback state of the gap, see [DiffInputField].
+  final bool isWrong;
+  final int attemptCount;
+  final bool solutionRevealed;
+  final bool isCorrect;
   final ValueChanged<String> onAnswerChanged;
   final ValueChanged<String> onAnswerSubmitted;
   final VoidCallback onGrammarHintTap;
@@ -49,7 +57,10 @@ class FillInCard extends StatelessWidget {
                       ? DiffInputField(
                           key: ValueKey('diff_input_${exercise.stackWordId}'),
                           targetAnswer: exercise.targetAnswer,
-                          attemptFailed: attemptFailed,
+                          isWrong: isWrong,
+                          attemptCount: attemptCount,
+                          solutionRevealed: solutionRevealed,
+                          isCorrect: isCorrect,
                           onChanged: onAnswerChanged,
                           onSubmitted: onAnswerSubmitted,
                         )

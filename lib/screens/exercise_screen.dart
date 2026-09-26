@@ -22,37 +22,101 @@ class ExerciseScreen extends ConsumerStatefulWidget {
 }
 
 class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
+  // Per-card state; [_syncCard] resets it whenever the current card changes.
+  ExerciseData? _card;
   String _answer = '';
-  bool _isSubmitting = false;
-  bool _attemptFailed = false;
-  ExerciseData? _attemptExercise;
 
-  Future<void> _confirmAnswer(ExerciseData exercise, String input) async {
-    if (_isSubmitting) return;
+  /// Wrong confirmations on this card.
+  int _attemptCount = 0;
+
+  /// submitAnswer(false) was sent for this card: the first attempt decided.
+  bool _firstAttemptWasWrong = false;
+
+  /// "Wort erfahren" was tapped; help only, not an attempt.
+  bool _solutionRevealed = false;
+
+  /// The last confirmation was wrong and the input is unchanged since.
+  bool _isWrong = false;
+
+  /// The answer was confirmed correct; the button now says "Weiter".
+  bool _isCorrect = false;
+
+  /// "Weiter" is saving the result.
+  bool _advancing = false;
+
+  void _syncCard(ExerciseData? card) {
+    if (identical(card, _card)) return;
+    _card = card;
+    _answer = '';
+    _attemptCount = 0;
+    _firstAttemptWasWrong = false;
+    _solutionRevealed = false;
+    _isWrong = false;
+    _isCorrect = false;
+    _advancing = false;
+  }
+
+  ExerciseAction get _action => _isCorrect
+      ? ExerciseAction.next
+      : _answer.isEmpty
+      ? ExerciseAction.revealWord
+      : ExerciseAction.submit;
+
+  ExerciseNotifier get _notifier =>
+      ref.read(exerciseProvider(widget.stackId).notifier);
+
+  /// Runs what the button currently shows; the keyboard's done key does the
+  /// same.
+  void _runAction(ExerciseData exercise) {
+    switch (_action) {
+      case ExerciseAction.revealWord:
+        // Help only: no attempt, no scoring, no card change.
+        setState(() => _solutionRevealed = true);
+      case ExerciseAction.submit:
+        _confirm(exercise);
+      case ExerciseAction.next:
+        _next();
+    }
+  }
+
+  void _confirm(ExerciseData exercise) {
     final correct =
-        input.trim().toLowerCase() ==
+        _answer.trim().toLowerCase() ==
         exercise.targetAnswer.trim().toLowerCase();
-    setState(() {
-      _answer = input;
-      _isSubmitting = true;
-      if (!correct) _attemptFailed = true;
-    });
-
-    // Keep the per-character result visible before replacing the card.
-    await Future<void>.delayed(const Duration(milliseconds: 700));
-    if (!mounted) return;
-    try {
-      await ref
-          .read(exerciseProvider(widget.stackId).notifier)
-          .submitAnswer(correct);
-      if (!mounted) return;
+    if (correct) {
+      // Scored on "Weiter", unless a miss already scored this card.
       setState(() {
-        _answer = '';
-        _isSubmitting = false;
+        _isCorrect = true;
+        _isWrong = false;
       });
-    } catch (_) {
+      return;
+    }
+
+    final isFirstMiss = !_firstAttemptWasWrong;
+    setState(() {
+      _attemptCount++;
+      _isWrong = true;
+      _firstAttemptWasWrong = true;
+    });
+    // SM-2 gets the first attempt's result, once per card.
+    if (isFirstMiss) _submit(false);
+  }
+
+  Future<void> _next() async {
+    if (_advancing) return;
+    setState(() => _advancing = true);
+    if (!_firstAttemptWasWrong) await _submit(true);
+    if (!mounted) return;
+    _notifier.nextCard();
+  }
+
+  /// Sends the card's single result. A failure is reported, not retried, so
+  /// the card is never scored twice; unscored, it comes up again later.
+  Future<void> _submit(bool correct) async {
+    try {
+      await _notifier.submitAnswer(correct);
+    } on Exception {
       if (!mounted) return;
-      setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Deine Antwort konnte nicht gespeichert werden.'),
@@ -76,10 +140,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
       ),
       data: (session) {
         final exercise = session.currentExercise;
-        if (!identical(exercise, _attemptExercise)) {
-          _attemptExercise = exercise;
-          _attemptFailed = false;
-        }
+        _syncCard(exercise);
         if (exercise == null) {
           return _status(
             Text(
@@ -118,7 +179,10 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   Widget _buildExercise(ExerciseData exercise) {
     return Scaffold(
       backgroundColor: AppColors.bg,
-      bottomNavigationBar: const ExerciseInputBar(),
+      bottomNavigationBar: ExerciseInputBar(
+        action: _action,
+        onAction: _advancing ? null : () => _runAction(exercise),
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -154,15 +218,19 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
                             'exercise_card_${exercise.stackWordId}',
                           ),
                           exercise: exercise,
-                          attemptFailed: _attemptFailed,
+                          isWrong: _isWrong,
+                          attemptCount: _attemptCount,
+                          solutionRevealed: _solutionRevealed,
+                          isCorrect: _isCorrect,
                           onAnswerChanged: (value) {
-                            if (_answer == value) {
-                              return;
-                            }
-                            setState(() => _answer = value);
+                            if (_answer == value) return;
+                            setState(() {
+                              _answer = value;
+                              // Feedback belongs to the confirmed input.
+                              _isWrong = false;
+                            });
                           },
-                          onAnswerSubmitted: (value) =>
-                              _confirmAnswer(exercise, value),
+                          onAnswerSubmitted: (_) => _runAction(exercise),
                           onGrammarHintTap: () =>
                               showGrammarHintSheet(context, exercise),
                         ),
