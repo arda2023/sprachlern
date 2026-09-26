@@ -1,26 +1,26 @@
-# NEXTSTEPS – Supabase Auth + Custom-Stapel
+# NEXTSTEPS – Supabase Auth, Custom-Stapel, englische Karten (PR #2)
 ## Erledigt
-- `Supabase.initialize` in `main.dart` (supabase_flutter 2.17.2, keine Konflikte mit riverpod 3.4.3 / go_router 18.0.1). `/login` + `/register` mit Ladezustand und Fehlertext, Auth-Redirect, „Abmelden" meldet wirklich ab.
-- Custom-Stapel liest/schreibt `custom_stacks` / `custom_stack_cards` (ein Stapel pro Nutzer, beim ersten Zugriff angelegt). Satzgenerierung bleibt der Mock.
-## Geänderte / neue Dateien
-- Neu: `config/supabase_config.dart`, `services/{supabase_client,auth_service,custom_stack_repository,gemini_sentence_service}.dart`, `providers/auth_provider.dart`, `screens/{login,register}_screen.dart`, `widgets/auth_form.dart`, `test/auth_flow_test.dart`, `test/helpers/fake_auth_service.dart`.
-- Geändert: `main.dart`, `router/app_router.dart` (`appRouter` → `routerProvider`), `providers/custom_stack_provider.dart`, `screens/account_screen.dart`, `pubspec.yaml/.lock`, generierte Plugin-Registrants (linux/macos/windows).
+- Auth: `/login` + `/register` mit Ladezustand und Fehlertext, Redirect über `routerProvider` (GoRouter einmal gebaut, `ValueNotifier` als `refreshListenable` — Neubau würde den Navigations-Stack verwerfen), „Abmelden" meldet echt ab.
+- Custom-Stapel liest/schreibt `custom_stacks` / `custom_stack_cards`, ein Stapel pro Nutzer.
+- **Option (b) umgesetzt:** `CustomStackCard` = `targetWord` (englisches Lückenwort) + `englishSentence` + `germanSentence`. `GeminiSentenceService` ist fertig und aktiv: Wörter → lokaler deutscher Vorlagensatz → `generate-sentence`; Text → eingegebener Satz unverändert → `generate-sentence`. Ein Aufruf pro Eintrag, nacheinander; `gapWord` wird ohne Randsatzzeichen zum Zielwort und muss im englischen Satz vorkommen, sonst scheitert der ganze Batch (es wird nichts gespeichert).
+- Kartenzeile dreizeilig wie 5.17: Zielwort `en-headword` Cyan/Serif, deutscher Satz `body-sm` muted, englischer Satz `en-line` Cyan/Serif. **design.md 6 entsprechend angepasst** (vorher: „kein Cyan/Serif, da deutscher Inhalt").
+- `MockSentenceGenerationService` samt Längstes-Wort-Heuristik entfernt; die Vorlagensätze leben als `germanTemplateSentence()` weiter.
+## Migration — vor dem Testen ausführen
+- Datei: `supabase/migrations/20260926120000_add_english_sentence_to_custom_stack_cards.sql` (SQL-Editor oder `supabase db push`):
+  `alter table public.custom_stack_cards add column english_sentence text not null default '';`
+  `alter table public.custom_stack_cards alter column english_sentence drop default;`
+- Optional, löscht Daten: Karten von vor der Migration haben ein deutsches `target_word` und keinen englischen Satz → `delete from public.custom_stack_cards where english_sentence = '';`
+- Es gibt keine Basis-Migration für die Tabellen; `supabase db reset` lokal scheitert daher an dieser Datei.
 ## Testergebnis
-- `flutter analyze`: No issues found. `flutter test`: 45/45 (38 vorher + 6 Auth + 1 Persistenz).
-- Angepasst, Assertions unverändert: `custom_stack_test.dart` (Overrides für User-ID + In-Memory-Repository, sonst greift der Provider auf das uninitialisierte Supabase zu). **Nicht vorgesehen, aber zwingend:** `widget_test.dart` pumpt die ganze App ohne Session — die geforderte Umleitung schickt sie auf `/login` statt zur Bottom-Nav. Läuft jetzt mit angemeldetem Fake.
-- Nicht gegen das echte Supabase getestet: Die Netzwerk-Richtlinie des Cloud-Containers blockiert `rojvuhvsnxeezzqrrcya.supabase.co`.
-## Entscheidungen
-- **Redirect:** `routerProvider` baut den GoRouter einmal; ein `ValueNotifier<bool>` spiegelt `isAuthenticatedProvider` und ist `refreshListenable`. Den Router bei jedem Auth-Wechsel neu zu bauen würde den Navigations-Stack verwerfen. `isAuthenticated` = synchrone `currentSession != null`, bei jedem Auth-Event neu berechnet — sonst würde eine gespeicherte Session beim Start kurz auf `/login` umgeleitet, bevor das erste Stream-Event kommt.
-- Ein Formular (`auth_form.dart`) für beide Screens. Feld-Deko aus `add_words_screen.dart` dupliziert (gesperrt), Primär-Button privat (es gibt kein geteiltes Widget).
-- Custom-Stapel-State bleibt synchrones `CustomStack` und lädt im Hintergrund, weil beide gesperrten Screens ihn synchron lesen. Nach dem Insert werden die von der DB zurückgegebenen Zeilen angehängt (kein Refetch). Ein Nutzerwechsel lädt neu.
-- `publishableKey:` statt `anonKey:` (in 2.17.2 deprecated). Registrierung ohne Session (E-Mail-Bestätigung an) zeigt einen Hinweis statt nichts.
-## BLOCKED — Edge-Function-Contract (Schritt 9, Entscheidung nötig)
-- `generate-sentence` übersetzt DE→EN und liefert `{englishSentence, gapWord}`; `CustomStackCard` speichert deutsches Zielwort + deutschen Satz. `GeminiSentenceService` wirft `UnimplementedError`, der Provider bleibt beim Mock.
-- (a) Function-Contract ändern: deutscher Beispielsatz + deutsches Zielwort, wie der Mock. Kein Modell-/Schema-Umbau, deckt Wort- und Text-Eingabe ab.
-- (b) Function behalten, Karte um `english_sentence` + `gap_word` erweitern (Migration + Modell). Passt zur Lückentext-Übung einer Englisch-App — die jetzigen Karten üben gar kein Englisch. Offen: Wort-Eingabe braucht zuerst einen deutschen Satz, die Function erwartet `germanSentence`.
-- (c) Mischform: deutscher Satz bleibt Quelle, die Übersetzung kommt als Zusatzspalten dazu; Satz für Wort-Eingabe per zweitem Function-Modus.
+- `flutter analyze`: No issues found. `flutter test`: 48/48.
+- `custom_stack_test.dart`: läuft jetzt über den echten `GeminiSentenceService` mit gefakter Function (`test/helpers/fake_functions_client.dart`). Geändert: Wörter-Test prüft statt „deutscher Satz enthält Zielwort" die gesendeten Vorlagensätze, deutsches Eingabewort im deutschen Satz, englisches Zielwort im englischen Satz; Text-Test erwartet die Lückenwörter der Function (`doing`, `time`) statt der Heuristik (`machst`, `keine`); Persistenz-Test mit englischer Beispielkarte, prüft zusätzlich Cyan/Serif. Leerzustand-Test unverändert.
+- Weiterhin: `widget_test.dart` läuft mit angemeldetem Fake, weil der Redirect die App ohne Session auf `/login` schickt.
+- Neu: `gemini_sentence_service_test.dart` (3 Tests: Vorlagensatz + Mapping, Satzzeichen, unbrauchbare Antwort / Function-Fehler).
+- Nichts gegen echtes Supabase/Gemini geprüft: die Sandbox blockiert `rojvuhvsnxeezzqrrcya.supabase.co`.
+## Lokal gegen echtes Supabase zu prüfen
+- Migration → Registrieren/Login → Wörter und Text hinzufügen → englischer Satz + Lückenwort plausibel → App-Neustart, Karten noch da.
+- Ob die Function mit Login-Token aufgerufen werden darf (JWT-Prüfung) und ob `gemini-3.8-flash` antwortet; Fehler landen derzeit nur im Log.
 ## Offene Probleme
-- Schema nicht live geprüft (Spaltennamen laut Auftrag, Host im Container gesperrt). Batch-Inserts haben dasselbe `created_at`; `id` bricht den Gleichstand, bei UUIDs aber nicht in Einfügereihenfolge → Positionsspalte.
-- Lade-/Speicherfehler des Custom-Stapels erscheinen nur im Log, und vor dem Laden steht kurz der Leerzustand. Behebung: AsyncNotifier + Änderung der zwei gesperrten Screens.
-- Supabase-Fehlertexte sind englisch („Invalid login credentials"); ein deutsches Mapping steht aus (design.md: deutsche UI).
-- Veraltet, nicht geändert (gesperrt): CLAUDE.md „Flutter-Client-Anbindung noch nicht implementiert"; Kommentar „In-memory only" in `models/custom_stack_data.dart`.
+- „Hinzufügen" zeigt keinen Ladezustand und lässt sich während der (jetzt echten, langsamen) Gemini-Aufrufe erneut antippen → doppelte Karten möglich. Fehler erscheinen nicht in der UI. Beides betrifft `add_words_screen.dart` (nicht Teil dieses Auftrags).
+- Batch-Inserts haben dasselbe `created_at`; `id` bricht den Gleichstand, bei UUIDs nicht in Einfügereihenfolge.
+- Supabase-Fehlertexte kommen englisch; ein deutsches Mapping steht aus. CLAUDE.md (Tech-Stack) beschreibt Supabase und Edge Function noch als „nicht angebunden" — nicht geändert.

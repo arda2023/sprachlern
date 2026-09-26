@@ -4,9 +4,10 @@ import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
 
-/// One card of a custom stack, styled per design.md 5.3. Both lines are German
-/// UI/learning input, so they stay Sans + white/muted — cyan serif is reserved
-/// for English content (design.md 2).
+/// One card of a custom stack (design.md 6, "Custom-Stapel erstellen"),
+/// three lines in the order of 5.17: the English gap word, the German source
+/// sentence, the English sentence. The card practises English, so both English
+/// lines are serif + cyan (design.md 2).
 class CustomStackCardRow extends StatelessWidget {
   const CustomStackCardRow({super.key, required this.card});
 
@@ -43,10 +44,7 @@ class CustomStackCardRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  card.targetWord,
-                  style: AppTextStyles.title.copyWith(color: AppColors.white),
-                ),
+                Text(card.targetWord, style: AppTextStyles.enHeadword),
                 const SizedBox(height: AppSpacing.s4),
                 Text(
                   card.germanSentence,
@@ -54,6 +52,10 @@ class CustomStackCardRow extends StatelessWidget {
                     color: AppColors.textMuted,
                   ),
                 ),
+                if (card.englishSentence.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.s8),
+                  Text(card.englishSentence, style: AppTextStyles.enLine),
+                ],
               ],
             ),
           ),

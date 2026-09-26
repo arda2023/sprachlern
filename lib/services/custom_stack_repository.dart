@@ -10,7 +10,8 @@ class CustomStackRepository {
 
   static const _stacksTable = 'custom_stacks';
   static const _cardsTable = 'custom_stack_cards';
-  static const _cardColumns = 'id, target_word, german_sentence';
+  static const _cardColumns =
+      'id, target_word, english_sentence, german_sentence';
 
   /// Loads the user's stack together with its cards. There is one stack per
   /// user for now; it is created with the default name on first access.
@@ -73,6 +74,7 @@ class CustomStackRepository {
             {
               'stack_id': stackId,
               'target_word': card.targetWord,
+              'english_sentence': card.englishSentence,
               'german_sentence': card.germanSentence,
             },
         ])
@@ -92,6 +94,7 @@ class CustomStackRepository {
       CustomStackCard(
         id: row['id'].toString(),
         targetWord: row['target_word'] as String,
+        englishSentence: row['english_sentence'] as String,
         germanSentence: row['german_sentence'] as String,
       );
 }

@@ -2,13 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sprachlern/models/custom_stack_data.dart';
 import 'package:sprachlern/providers/auth_provider.dart';
 import 'package:sprachlern/services/custom_stack_repository.dart';
+import 'package:sprachlern/services/gemini_sentence_service.dart';
 import 'package:sprachlern/services/sentence_generation_service.dart';
 import 'package:sprachlern/services/supabase_client.dart';
 
-/// Stays on the mock until the Edge Function contract is settled — see
-/// `GeminiSentenceService` and NEXTSTEPS.md, "BLOCKED".
 final sentenceGenerationServiceProvider = Provider<SentenceGenerationService>(
-  (ref) => MockSentenceGenerationService(),
+  (ref) => GeminiSentenceService(ref.watch(supabaseClientProvider).functions),
 );
 
 final customStackRepositoryProvider = Provider<CustomStackRepository>(

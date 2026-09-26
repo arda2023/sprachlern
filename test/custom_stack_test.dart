@@ -8,7 +8,37 @@ import 'package:sprachlern/providers/custom_stack_provider.dart';
 import 'package:sprachlern/screens/add_words_screen.dart';
 import 'package:sprachlern/screens/custom_stack_screen.dart';
 import 'package:sprachlern/services/custom_stack_repository.dart';
+import 'package:sprachlern/services/gemini_sentence_service.dart';
+import 'package:sprachlern/theme/app_colors.dart';
+import 'package:sprachlern/theme/app_text_styles.dart';
 import 'package:sprachlern/widgets/custom_stack_card_row.dart';
+
+import 'helpers/fake_functions_client.dart';
+
+/// What the fake `generate-sentence` answers for each German sentence the
+/// tests send: the word-mode template sentences and the text-mode input.
+const _translations = {
+  'Ich mag Essen sehr.': (
+    englishSentence: 'I really like food.',
+    gapWord: 'food',
+  ),
+  'Wir haben gestern über Gemüse gesprochen.': (
+    englishSentence: 'We talked about vegetables yesterday.',
+    gapWord: 'vegetables',
+  ),
+  'Kannst du mir backen erklären?': (
+    englishSentence: 'Can you explain baking to me?',
+    gapWord: 'baking',
+  ),
+  'Was machst du gerade?': (
+    englishSentence: 'What are you doing right now?',
+    gapWord: 'doing',
+  ),
+  'Ich habe keine Zeit.': (
+    englishSentence: "I don't have time.",
+    gapWord: 'time',
+  ),
+};
 
 /// In-memory stand-in for Supabase: it outlives a [ProviderScope], so a fresh
 /// scope over the same instance behaves like an app restart.
@@ -41,6 +71,7 @@ class _FakeCustomStackRepository implements CustomStackRepository {
         CustomStackCard(
           id: 'db-${_nextId++}',
           targetWord: card.targetWord,
+          englishSentence: card.englishSentence,
           germanSentence: card.germanSentence,
         ),
     ];
@@ -60,11 +91,13 @@ GoRouter _router() => GoRouter(
   ],
 );
 
-/// The stack now loads per signed-in user from the repository, so the flow
-/// runs with a fixed user id and an in-memory repository instead of Supabase.
+/// The stack loads per signed-in user from the repository and cards come from
+/// the Edge Function, so the flow runs with a fixed user id, an in-memory
+/// repository and the real [GeminiSentenceService] over a fake function.
 Future<void> _pumpFlow(
   WidgetTester tester, {
   _FakeCustomStackRepository? repository,
+  FakeFunctionsClient? functions,
 }) async {
   tester.view.physicalSize = const Size(375, 900);
   tester.view.devicePixelRatio = 1.0;
@@ -76,6 +109,11 @@ Future<void> _pumpFlow(
         currentUserIdProvider.overrideWithValue('test-user'),
         customStackRepositoryProvider.overrideWithValue(
           repository ?? _FakeCustomStackRepository(),
+        ),
+        sentenceGenerationServiceProvider.overrideWithValue(
+          GeminiSentenceService(
+            functions ?? FakeFunctionsClient(_translations),
+          ),
         ),
       ],
       child: MaterialApp.router(routerConfig: _router()),
@@ -135,33 +173,40 @@ void main() {
     expect(find.byType(AddWordsScreen), findsOneWidget);
   });
 
-  testWidgets('Wörter-Modus erzeugt je Wort eine Karte mit generiertem Satz', (
+  testWidgets('Wörter-Modus: deutscher Vorlagensatz, Englisch aus Gemini', (
     tester,
   ) async {
-    await _pumpFlow(tester);
+    final functions = FakeFunctionsClient(_translations);
+    await _pumpFlow(tester, functions: functions);
     await _addEntries(tester, 'Essen;Gemüse;backen', textMode: false);
 
     expect(find.text('Karten: 3'), findsOneWidget);
     expect(find.byType(CustomStackCardRow), findsNWidgets(3));
 
-    for (final word in ['Essen', 'Gemüse', 'backen']) {
-      expect(find.text(word), findsOneWidget);
-    }
+    // One local German template sentence per word, translated in order.
+    expect(functions.requestedSentences, [
+      'Ich mag Essen sehr.',
+      'Wir haben gestern über Gemüse gesprochen.',
+      'Kannst du mir backen erklären?',
+    ]);
 
-    // Each card carries a generated sentence containing its target word.
-    final rows = tester.widgetList<CustomStackCardRow>(
-      find.byType(CustomStackCardRow),
-    );
-    for (final row in rows) {
-      expect(row.card.germanSentence, contains(row.card.targetWord));
-      expect(row.card.germanSentence, isNot(equals(row.card.targetWord)));
+    final cards = tester
+        .widgetList<CustomStackCardRow>(find.byType(CustomStackCardRow))
+        .map((row) => row.card)
+        .toList();
+    // The target word is the English gap word the function picked.
+    expect(cards.map((c) => c.targetWord), ['food', 'vegetables', 'baking']);
+    for (final (index, word) in ['Essen', 'Gemüse', 'backen'].indexed) {
+      expect(cards[index].germanSentence, contains(word));
+      expect(cards[index].englishSentence, contains(cards[index].targetWord));
     }
   });
 
   testWidgets('Text-Modus lässt Sätze unverändert und setzt ein Zielwort', (
     tester,
   ) async {
-    await _pumpFlow(tester);
+    final functions = FakeFunctionsClient(_translations);
+    await _pumpFlow(tester, functions: functions);
     await _addEntries(
       tester,
       'Was machst du gerade?;Ich habe keine Zeit.',
@@ -175,13 +220,18 @@ void main() {
         .widgetList<CustomStackCardRow>(find.byType(CustomStackCardRow))
         .toList();
 
-    // Sentences survive verbatim (only trimmed).
+    // Sentences survive verbatim (only trimmed), also on the way to Gemini.
+    expect(functions.requestedSentences, [
+      'Was machst du gerade?',
+      'Ich habe keine Zeit.',
+    ]);
     expect(rows[0].card.germanSentence, 'Was machst du gerade?');
     expect(rows[1].card.germanSentence, 'Ich habe keine Zeit.');
 
-    // Longest-word heuristic, punctuation ignored.
-    expect(rows[0].card.targetWord, 'machst');
-    expect(rows[1].card.targetWord, 'keine');
+    // The target word is the function's gap word, no longer a heuristic.
+    expect(rows[0].card.targetWord, 'doing');
+    expect(rows[0].card.englishSentence, 'What are you doing right now?');
+    expect(rows[1].card.targetWord, 'time');
   });
 
   testWidgets('Lädt den gespeicherten Stapel und speichert neue Karten', (
@@ -190,7 +240,8 @@ void main() {
     final repository = _FakeCustomStackRepository([
       const CustomStackCard(
         id: 'db-existing',
-        targetWord: 'Brot',
+        targetWord: 'bread',
+        englishSentence: 'I am buying bread.',
         germanSentence: 'Ich kaufe Brot.',
       ),
     ]);
@@ -198,17 +249,25 @@ void main() {
 
     // The existing card comes from the repository, not from memory.
     expect(find.text('Karten: 1'), findsOneWidget);
-    expect(find.text('Brot'), findsOneWidget);
+    expect(find.text('bread'), findsOneWidget);
+
+    // English learning content is serif + cyan (design.md 2 and 6).
+    final english = tester.widget<Text>(find.text('I am buying bread.')).style!;
+    expect(english.color, AppColors.cyan);
+    expect(english.fontFamily, AppTextStyles.enLine.fontFamily);
+    final german = tester.widget<Text>(find.text('Ich kaufe Brot.')).style!;
+    expect(german.color, AppColors.textMuted);
 
     await _addEntries(tester, 'Essen;Gemüse', textMode: false);
 
     expect(find.text('Karten: 3'), findsOneWidget);
     expect(repository.insertedInto, [_FakeCustomStackRepository.stackId]);
     expect(repository.cards.map((c) => c.targetWord), [
-      'Brot',
-      'Essen',
-      'Gemüse',
+      'bread',
+      'food',
+      'vegetables',
     ]);
+    expect(repository.cards.last.englishSentence, contains('vegetables'));
     // The state holds the stored rows, with database ids.
     final ids = tester
         .widgetList<CustomStackCardRow>(find.byType(CustomStackCardRow))
