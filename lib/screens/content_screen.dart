@@ -11,10 +11,6 @@ import 'package:sprachlern/widgets/section_header.dart';
 class ContentScreen extends ConsumerWidget {
   const ContentScreen({super.key});
 
-  /// Routes for tiles whose target lives outside the content provider's own
-  /// data. Belongs in `content_provider.dart` once that file is in scope again.
-  static const _fallbackRoutes = {'Eigene Stapel': '/custom-stack'};
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sections = ref.watch(contentSectionsProvider);
@@ -54,11 +50,11 @@ class ContentScreen extends ConsumerWidget {
                         ),
                     itemBuilder: (context, index) {
                       final tile = section.tiles[index];
-                      final route =
-                          tile.route ?? _fallbackRoutes[tile.label];
                       return ContentTile(
                         tile: tile,
-                        onTap: route == null ? null : () => context.go(route),
+                        onTap: tile.route == null
+                            ? null
+                            : () => context.go(tile.route!),
                       );
                     },
                   ),

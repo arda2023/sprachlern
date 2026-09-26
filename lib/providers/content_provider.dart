@@ -11,19 +11,31 @@ const _contentSections = [
         label: 'Stapel',
         route: '/stacks',
       ),
-      ContentTileData(icon: FLucideIcons.box, label: 'Eigene Stapel'),
+      ContentTileData(
+        icon: FLucideIcons.box,
+        label: 'Eigene Stapel',
+        route: '/custom-stack',
+      ),
     ],
   ),
   ContentSectionData(
     title: 'ÜBUNGSAUFGABEN',
     tiles: [
-      ContentTileData(icon: FLucideIcons.libraryBig, label: 'Vokabeln'),
+      ContentTileData(
+        icon: FLucideIcons.libraryBig,
+        label: 'Vokabeln',
+        route: '/word-list',
+      ),
       ContentTileData(
         icon: FLucideIcons.repeat2,
         label: 'Stapel-Revue',
         route: '/stack-revue',
       ),
-      ContentTileData(icon: FLucideIcons.fileText, label: 'Texte'),
+      ContentTileData(
+        icon: FLucideIcons.fileText,
+        label: 'Texte',
+        route: '/texts',
+      ),
       ContentTileData(icon: FLucideIcons.messagesSquare, label: 'Sprechen'),
       ContentTileData(icon: FLucideIcons.languages, label: 'Grammatik'),
       ContentTileData(icon: FLucideIcons.headphones, label: 'Hören'),

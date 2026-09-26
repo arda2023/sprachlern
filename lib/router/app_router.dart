@@ -12,6 +12,9 @@ import 'package:sprachlern/screens/progress_screen.dart';
 import 'package:sprachlern/screens/stack_detail_screen.dart';
 import 'package:sprachlern/screens/stack_list_screen.dart';
 import 'package:sprachlern/screens/stack_revue_screen.dart';
+import 'package:sprachlern/screens/text_exercise_screen.dart';
+import 'package:sprachlern/screens/texts_screen.dart';
+import 'package:sprachlern/screens/word_list_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
@@ -74,5 +77,17 @@ final appRouter = GoRouter(
         GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen()),
       ],
     ),
+    GoRoute(
+      path: '/texts',
+      builder: (_, _) => const TextsScreen(),
+      routes: [
+        GoRoute(
+          path: ':id/exercise',
+          builder: (_, state) =>
+              TextExerciseScreen(textId: state.pathParameters['id']!),
+        ),
+      ],
+    ),
+    GoRoute(path: '/word-list', builder: (_, _) => const WordListScreen()),
   ],
 );

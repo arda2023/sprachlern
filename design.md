@@ -335,6 +335,20 @@ Gedrückt-Zustand: Fläche um ca. 8 % abdunkeln (Weiß → `#E6E6E6`, Karten →
     2. Deutscher Beispielsatz (`body-sm`, `--text-muted`)
     3. Englischer Beispielsatz (`sentence`/`en-line`, `--cyan`, Serif)
 
+### 5.18 Eingabemodus-Umschalter (Wörter/Text)
+
+Segmented Control mit genau zwei Segmenten, der zwischen zwei Eingabearten wechselt. Eingesetzt beim Erstellen eigener Stapel: "Wörter" (einzelne Wörter eingeben) und "Text" (ganze Sätze eingeben). Neu gegenüber den Screenshots; abgeleitet aus 5.14 (Farben), 3.3 (Pill-Radius) und der Flächenleiter aus 1.6.
+
+- **Maße**: volle Inhaltsbreite (343), Höhe **40**, Innenabstand **4** rundum. Die beiden Segmente teilen sich die Breite gleichmäßig und sind **32** hoch.
+- **Track** (Fläche hinter beiden Segmenten): `--surface`, Radius **9999**. Er liegt auf `--bg`, das gewählte Segment liegt eine Stufe heller darauf.
+- **Segment gewählt**: Fläche `--surface-2`, Radius **9999**, Label `--white`.
+- **Segment nicht gewählt**: keine eigene Fläche (der Track scheint durch), Label `--text-muted`.
+- **Label**: `nav-title` (17 / 22, Sans 400), zentriert. Der Text wechselt nur die Farbe, nicht das Gewicht.
+- **Verhalten**: Immer genau ein Segment gewählt, Startzustand ist das linke ("Wörter"). Ein Tipp auf das gewählte Segment ändert nichts. Die ganze Segmentfläche ist tippbar, nicht nur der Text. Der Wechsel erfolgt sofort ohne Animation.
+- **Zustände**: nur gewählt und nicht gewählt. Ein Gedrückt-, Deaktiviert- oder Fokus-Zustand ist nicht definiert.
+- **Barrierefreiheit**: Jedes Segment ist als Button mit Auswahlzustand ausgezeichnet (Status nie nur über Farbe, siehe 8).
+- **Bekannte Abweichung**: Die Segmente sind mit 32 px niedriger als die in 7 geforderten 44 px Tap-Ziel. Sollte bei Gelegenheit auf eine Höhe von mindestens 44 (Segment) angehoben werden.
+
 ---
 
 ## 6. Screen-Inventar
@@ -346,6 +360,7 @@ Gedrückt-Zustand: Fläche um ca. 8 % abdunkeln (Weiß → `#E6E6E6`, Karten →
 | **Stapel (Liste)** | Top-Bar mit Hilfe-Icon → Sektion LINGVIST-STAPEL → Stapel-Listenkarten (mit individuellen Icon-Farben; Balken nur bei begonnenen Stapeln) |
 | **Stapel (Detail)** | Top-Bar (beim Scrollen Titel einblendend) → Icon + Level → Titel `display` → Beschreibung → Status (5.17) → Toggle-Karte "Stapel lernen" → Primär-Button "Lerne mit diesem Stapel" → aufklappbare Karte "Deine letzten 5 gesehenen Wörter..." (dreizeilige Einträge) → MEHR DAVON (Revue-Karte mit Outline-Button "Diesen Stapel durchsehen") |
 | **Stapel-Revue** | Info-Karte (schließbar, `--surface-2`) → Liste der Stapel mit Play-Buttons (Ø 44) und leerem Track |
+| **Custom-Stapel erstellen** | *Übersicht:* Top-Bar (Zurück-Pfeil, Titel "Custom-Stapel" zentriert, Text-Link "Fertigstellen" in `--lilac` rechts) → Kopfzeile "Karten: N" (`title`, `--white`) mit "+"-Button (24) rechts → Karten-Zeilen (Karte nach 5.3: `--surface`, Radius 8, Padding 16, Abstand 8; Punkt Ø 8 `--orange`, Zielwort `title` `--white`, deutscher Satz `body-sm` `--text-muted`, kein Cyan/Serif, da deutscher Inhalt); ohne Karten stattdessen zentrierter Leertext ("Noch keine Karten. Füge Wörter hinzu, um zu starten.", `body`, `--text-muted`, keine Grafik). *Hinzufügen* (vom "+" geöffnet): Top-Bar (✕ links, Titel "Wörter hinzufügen", Text-Link "Hinzufügen" rechts, bei leerem Feld 40 %) → Umschalter Wörter/Text (5.18) → Abschnittstitel ("Wörter" bzw. "Text", `title`) → Hilfetext (`body`, `--text-muted`) → mehrzeiliges Eingabefeld (`--surface`, Radius 8, Padding 16, Platzhalter `--text-muted`, Fokus 2 px `--lilac`) → Hinweis zum Trennzeichen `;` (`body-sm`, `--text-muted`). Nach "Hinzufügen" zurück zur Übersicht, dort steigt "Karten: N". |
 | **Übung (Vokabeln)** | Übungs-Top-Bar → Lückentext-Karte → Übersetzungs-Karte → Tastatur-Leiste. Sheet für Grammatikhinweis. |
 | **Texte** | Carousel mit Text-Covern → Sheet mit Vorschau und Übungen ("Verben", "Beliebige Wortart") mit Play-Buttons |
 | **Text-Übung** | Fließtext mit Inline-Lücken (5.8) → Tastatur-Zusatzleiste (Icons `文A`, `⇄` links, Button "Antwort anzeigen" rechts; keine Sprungleiste) |

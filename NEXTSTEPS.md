@@ -1,29 +1,21 @@
-# NEXTSTEPS – Custom-Stapel erstellen
-
+# NEXTSTEPS – Texte, Text-Übung, Wortlisten
 ## Erledigt
-- `CustomStack` / `CustomStackCard` (in-memory), `SentenceGenerationService` (abstrakt) + `MockSentenceGenerationService`.
-- `customStackProvider` (NotifierProvider) mit `addFromWords` / `addFromText`; Service über eigenen `sentenceGenerationServiceProvider` injiziert, damit die LLM-Implementierung später ohne Caller-Änderung getauscht werden kann.
-- `CustomStackScreen` (Top-Bar, „Karten: N", +-Button, Kartenliste, Leerzustand ohne Grafik gemäß design.md 7).
-- `AddWordsScreen` (✕, Titel, „Hinzufügen" als Text-Link, Modus-Umschalter, mehrzeiliges Textfeld) und `InputModeToggle`.
-- Routen `/custom-stack` und `/custom-stack/add`; Kachel „Eigene Stapel" verdrahtet.
-- 3 Widget-Tests: Leerzustand/deaktivierter Button, Wörter-Modus, Text-Modus.
-
+- Texte: Cover-Karussell (4 Texte, beide Paletten) → Vorschau-Sheet mit 2 Übungszeilen → Text-Übung (Inline-Lücken 128×28 als echte `TextField`s, Tastatur-Zusatzleiste; „Antwort anzeigen" füllt die zuletzt fokussierte, sonst die erste offene Lücke).
+- Wortlisten: Suche (Teilstring, ohne Groß/Klein), Teal-Pill, A–Z-Leiste (nur vorhandene Buchstaben, Sprung per GlobalKey), Wort-Info-Sheet mit Notiz-Zähler „N / 1000" (Notiz nicht persistiert).
+- Kacheln „Texte" → `/texts`, „Vokabeln" → `/word-list`: Wortlisten ist der nächstliegende Ersatz für „Vokabeln durchsehen", bis ein eigener Vokabeln-Lernfluss existiert.
 ## Geänderte / neue Dateien
-- Neu: `lib/models/custom_stack_data.dart`, `lib/services/sentence_generation_service.dart`, `lib/providers/custom_stack_provider.dart`, `lib/screens/{custom_stack_screen,add_words_screen}.dart`, `lib/widgets/{custom_stack_card_row,input_mode_toggle}.dart`, `test/custom_stack_test.dart`
-- Geändert: `lib/router/app_router.dart`, `lib/screens/content_screen.dart`
-
+- Neu: die 12 Dateien aus dem Auftrag, dazu `widgets/round_play_button.dart` und `widgets/search_field.dart` (je eine Komponente nach CLAUDE.md) und `test/texts_word_list_test.dart`.
+- Geändert: `router/app_router.dart`, `providers/content_provider.dart`, `widgets/revue_stack_row.dart` (nutzt `RoundPlayButton`, Verhalten unverändert).
 ## Testergebnis
-- `flutter analyze`: No issues found.
-- `flutter test`: 22/22 bestanden (19 vorher + 3 neue), keine bestehende Assertion angepasst.
-
+- `flutter analyze`: No issues found. `flutter test`: 29/29 (22 vorher + 7 neu, keine bestehende Assertion angepasst).
+- Zusätzlich auf Android-Emulator bei 375×812 dp mit Referenz-Screenshots verglichen. Bildschirmtastatur ließ sich dort nicht einblenden: „Leiste über Tastatur" nur per Test mit simulierten `viewInsets` geprüft.
 ## Abweichungen / Annahmen
-- **Zielwort-Heuristik (Text-Modus)**: längstes Wort des Satzes, bei Gleichstand das erste; führende/schließende Satzzeichen werden beim Messen ignoriert. Beispiel: „Was machst du gerade?" → `machst`, „Ich habe keine Zeit." → `keine`. Bewusster Platzhalter, den später die LLM-Auswahl ersetzt.
-- **Route für „Eigene Stapel" liegt im Screen**, nicht im Provider: `content_provider.dart` stand auf „Nicht anfassen". `ContentScreen._fallbackRoutes` ist als Übergang markiert und gehört später in den Provider.
-- **`InputModeToggle` ist ein neues Muster** (design.md kennt keinen Segmented Control): Farben aus 5.14 (aktiv Weiß, inaktiv `--text-muted`), Radius aus 3.3 (Pill), Track folgt der Flächenleiter (`--surface` auf `--bg`, gewähltes Segment `--surface-2`). Sollte bei Gelegenheit in design.md 5 nachgetragen werden.
-- Karten-IDs erzeugt der Mock-Service über einen Instanzzähler (`card-0`, `card-1`, …) — ausreichend für In-Memory, nicht kollisionssicher über Sessions.
-- Zusatzhinweis „Trenne mehrere Einträge mit einem Semikolon." unter dem Feld ergänzt, da das Trennzeichen sonst nirgends sichtbar ist.
-
+- **Offen:** `#252938` (Dark-Cover) ist kein Token → `--surface` (#2C3143) als nächster, Streifen `--surface-3`. Vorschlag: `--cover-dark` in design.md 1.1 ergänzen. Cover-Geometrie ist eigener Entwurf.
+- **Offen:** Cover-Badge nennt in 5.15 nur „halbtransparent": dark `--surface-3`, purple `--purple`, je 80 % Deckkraft (Weiß auf `--lilac-soft` wäre unlesbar).
+- design.md widerspricht sich bzw. dem Screenshot (design.md war schreibgeschützt, nicht korrigiert): Sheet-Badge 5.11 `--surface-2` vs 5.15 `--surface` (Screenshot: `--surface`, verwendet); Info-Sheet-Trenner 3.4 „weiß" vs Screenshot `--surface-2` (verwendet); Kopf 5.8 (✕/Titel mittig/Glühbirne) vs Screenshot (←/Titel links über Balken/⋮) → 5.8 befolgt; Beschreibung im Vorschau-Sheet über statt unter den Zeilen (5.11).
+- Lücken-Cursor `--blue-link` (5.8: „blauer System-Cursor", einziger Blau-Token). Lesetext `read` (Sans/Weiß) statt Serif/Cyan nach 5.8. Zähler ohne Tausenderpunkt wie in design.md.
+- Beide Übungszeilen öffnen denselben Mock-Text; Fortschrittsbalken statisch aus `currentCard/totalCards`. Zeilen-Kachel im Sheet für beide `--surface-3` (Screenshot: zweite teal, kein Token).
+- Nicht gebaut (nicht verlangt): Quadrat-Button am Suchfeld (5.16), Filter-Icon (Wortlisten), „+" und „Alle anzeigen" (Texte). Top-Bars bleiben pro Screen privat wie bei den 4 bestehenden; gemeinsame Extraktion ist nur sinnvoll, wenn `grammar_exercise_screen.dart` angefasst werden darf.
 ## Offene Probleme
-- „Fertigstellen" ist inert (nur visuell), Stapelname ist fix „Custom-Stapel" und nicht editierbar.
-- Keine Persistenz: der Stapel geht beim Neustart verloren. Keine echte Übersetzung — die englische Seite der Karten fehlt noch vollständig.
-- Keine visuelle Prüfung im Simulator oder Browser.
+- Bestehender Bug, nicht angefasst: Die lila Fortschrittsfüllung in `ExerciseTopBar` und `_GrammarExerciseTopBar` hat Höhe 0 (Test-Probe: Rect 28→28 bzw. 44→44), im Grammatik-Screen zusätzlich mittig. Fix wie in `text_exercise_screen.dart`: `heightFactor: 1` und `SizedBox(width: double.infinity)`.
+- A–Z-Sprung baut die ganze Liste ohne Lazy-Loading (für Mock ok, für echte Wortzahlen ersetzen). Übersetzen/Wechseln/Tipp/Aktions-Icons inert, keine Persistenz.
