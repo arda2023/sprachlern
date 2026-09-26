@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/assets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sprachlern/models/settings_data.dart';
 import 'package:sprachlern/providers/grammar_exercise_provider.dart';
+import 'package:sprachlern/providers/settings_provider.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
@@ -15,6 +17,9 @@ class GrammarExerciseScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(grammarExerciseProvider);
     final exercise = state.exercise;
+    final autoAdvance = ref
+        .watch(settingsProvider)
+        .isToggleOn(settingsAutoAdvanceKey);
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -80,6 +85,17 @@ class GrammarExerciseScreen extends ConsumerWidget {
                         ),
                       );
                     }),
+                    // With "Nächste Karte automatisch" off the deck waits for
+                    // an explicit step (design.md 7); with it on the notifier
+                    // advances by itself, so no link is needed.
+                    if (state.isAnsweredCorrectly && !autoAdvance) ...[
+                      const SizedBox(height: AppSpacing.s16),
+                      _NextCardLink(
+                        onTap: () => ref
+                            .read(grammarExerciseProvider.notifier)
+                            .nextCard(),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -134,7 +150,10 @@ class _GrammarExerciseTopBar extends StatelessWidget {
               ],
             ),
           ),
+          // Full width: without it the bar shrinks to the width of its fill,
+          // and without heightFactor the fill has no height at all.
           SizedBox(
+            width: double.infinity,
             height: _progressHeight,
             child: Stack(
               children: [
@@ -142,7 +161,9 @@ class _GrammarExerciseTopBar extends StatelessWidget {
                   child: ColoredBox(color: AppColors.surface),
                 ),
                 FractionallySizedBox(
+                  key: const ValueKey('grammar_progress_fill'),
                   widthFactor: progress,
+                  heightFactor: 1,
                   child: const ColoredBox(color: AppColors.lilac),
                 ),
               ],
@@ -179,6 +200,34 @@ class _TopBarButton extends StatelessWidget {
           icon,
           size: _GrammarExerciseTopBar._iconSize,
           color: AppColors.white,
+        ),
+      ),
+    );
+  }
+}
+
+/// Text link per design.md 5.12: `--lilac`, `title`, no surface of its own.
+class _NextCardLink extends StatelessWidget {
+  const _NextCardLink({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        key: const ValueKey('grammar_next_card'),
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: 44,
+          child: Center(
+            child: Text(
+              'Weiter',
+              style: AppTextStyles.title.copyWith(color: AppColors.lilac),
+            ),
+          ),
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:sprachlern/providers/content_provider.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
+import 'package:sprachlern/widgets/app_toggle.dart';
 import 'package:sprachlern/widgets/recent_words_card.dart';
 import 'package:sprachlern/widgets/section_header.dart';
 import 'package:sprachlern/widgets/stack_status_bar.dart';
@@ -205,56 +206,13 @@ class _LearnToggleCardState extends State<_LearnToggleCard> {
               style: AppTextStyles.title.copyWith(color: AppColors.white),
             ),
           ),
-          _Toggle(
+          AppToggle(
+            key: const ValueKey('stack_learn_toggle'),
             value: _isOn,
             onChanged: (value) => setState(() => _isOn = value),
+            semanticLabel: 'Stapel lernen',
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// iOS-style toggle per design.md 5.13: 51 × 31, knob Ø 27.
-class _Toggle extends StatelessWidget {
-  const _Toggle({required this.value, required this.onChanged});
-
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  static const double _width = 51.0;
-  static const double _height = 31.0;
-  static const double _knobSize = 27.0;
-  static const double _inset = (_height - _knobSize) / 2;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Stapel lernen',
-      toggled: value,
-      child: GestureDetector(
-        key: const ValueKey('stack_learn_toggle'),
-        onTap: () => onChanged(!value),
-        child: Container(
-          width: _width,
-          height: _height,
-          padding: const EdgeInsets.all(_inset),
-          decoration: BoxDecoration(
-            color: value ? AppColors.lilac : AppColors.trackOff,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-          ),
-          child: Align(
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              width: _knobSize,
-              height: _knobSize,
-              decoration: const BoxDecoration(
-                color: AppColors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
