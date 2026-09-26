@@ -37,7 +37,11 @@ const _contentSections = [
         route: '/texts',
       ),
       ContentTileData(icon: FLucideIcons.messagesSquare, label: 'Sprechen'),
-      ContentTileData(icon: FLucideIcons.languages, label: 'Grammatik'),
+      ContentTileData(
+        icon: FLucideIcons.languages,
+        label: 'Grammatik',
+        route: '/grammar-list',
+      ),
       ContentTileData(icon: FLucideIcons.headphones, label: 'Hören'),
       ContentTileData(icon: FLucideIcons.music, label: 'Musik'),
     ],

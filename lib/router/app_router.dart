@@ -5,10 +5,14 @@ import 'package:sprachlern/screens/add_words_screen.dart';
 import 'package:sprachlern/screens/custom_stack_screen.dart';
 import 'package:sprachlern/screens/content_screen.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
+import 'package:sprachlern/screens/grammar_explanation_screen.dart';
+import 'package:sprachlern/screens/grammar_list_screen.dart';
 import 'package:sprachlern/screens/grammar_exercise_screen.dart';
 import 'package:sprachlern/screens/home_screen.dart';
+import 'package:sprachlern/screens/knowledge_center_screen.dart';
 import 'package:sprachlern/screens/learn_screen.dart';
 import 'package:sprachlern/screens/progress_screen.dart';
+import 'package:sprachlern/screens/settings_screen.dart';
 import 'package:sprachlern/screens/stack_detail_screen.dart';
 import 'package:sprachlern/screens/stack_list_screen.dart';
 import 'package:sprachlern/screens/stack_revue_screen.dart';
@@ -59,6 +63,28 @@ final appRouter = GoRouter(
       builder: (_, _) => const GrammarExerciseScreen(),
     ),
     GoRoute(
+      path: '/grammar-list',
+      builder: (_, _) => const GrammarListScreen(),
+    ),
+    GoRoute(
+      path: '/grammar-topics',
+      builder: (_, _) => const GrammarExplanationScreen(),
+      routes: [
+        // The light explanation page is its own screen (design.md 6 and 9).
+        GoRoute(
+          path: ':id',
+          builder: (_, state) => GrammarExplanationDetailScreen(
+            topicId: state.pathParameters['id']!,
+          ),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/knowledge-center',
+      builder: (_, _) => const KnowledgeCenterScreen(),
+    ),
+    GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+    GoRoute(
       path: '/stacks',
       builder: (_, _) => const StackListScreen(),
       routes: [
@@ -73,9 +99,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/custom-stack',
       builder: (_, _) => const CustomStackScreen(),
-      routes: [
-        GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen()),
-      ],
+      routes: [GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen())],
     ),
     GoRoute(
       path: '/texts',

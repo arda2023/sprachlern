@@ -26,19 +26,41 @@ class GrammarExerciseData {
   final int totalCards;
 }
 
+/// State of the grammar exercise: a deck of cards plus the answer selected on
+/// the current one.
 class GrammarExerciseState {
   const GrammarExerciseState({
-    required this.exercise,
+    required this.cards,
+    this.cardIndex = 0,
     this.selectedOptionIndex,
   });
 
-  final GrammarExerciseData exercise;
+  final List<GrammarExerciseData> cards;
+
+  /// Position in [cards]; it cycles once the deck runs out.
+  final int cardIndex;
+
   final int? selectedOptionIndex;
 
-  GrammarExerciseState copyWith({int? selectedOptionIndex}) {
+  GrammarExerciseData get exercise => cards[cardIndex];
+
+  /// `true` once the selected option is the correct one.
+  bool get isAnsweredCorrectly {
+    final index = selectedOptionIndex;
+    return index != null && exercise.options[index].isCorrectAnswer;
+  }
+
+  GrammarExerciseState copyWith({
+    int? cardIndex,
+    int? selectedOptionIndex,
+    bool clearSelection = false,
+  }) {
     return GrammarExerciseState(
-      exercise: exercise,
-      selectedOptionIndex: selectedOptionIndex,
+      cards: cards,
+      cardIndex: cardIndex ?? this.cardIndex,
+      selectedOptionIndex: clearSelection
+          ? null
+          : selectedOptionIndex ?? this.selectedOptionIndex,
     );
   }
 }

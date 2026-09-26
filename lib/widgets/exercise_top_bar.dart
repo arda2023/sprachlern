@@ -59,8 +59,12 @@ class ExerciseTopBar extends StatelessWidget {
                           const Positioned.fill(
                             child: ColoredBox(color: AppColors.surface),
                           ),
+                          // Without heightFactor the fill has no height and
+                          // the bar looks like a bare track.
                           FractionallySizedBox(
+                            key: const ValueKey('exercise_progress_fill'),
                             widthFactor: progress.clamp(0.0, 1.0),
+                            heightFactor: 1,
                             child: const ColoredBox(color: AppColors.lilac),
                           ),
                         ],
