@@ -122,7 +122,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('grammar_option_0')));
       await tester.pump(GrammarExerciseNotifier.autoAdvanceDelay * 3);
       expect(
-        find.text('We went through the ___ check together.'),
+        find.text('We went through the final check together.'),
         findsOneWidget,
       );
       expect(
@@ -139,12 +139,13 @@ void main() {
       );
       expect(find.byKey(const ValueKey('grammar_next_card')), findsNothing);
 
-      // Toggle on: a correct answer advances by itself, without a "Weiter".
+      // Toggle on: "Weiter" remains available during feedback, then the card
+      // advances by itself.
       container.read(settingsProvider.notifier).toggle('autoAdvance');
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('grammar_option_0')));
       await tester.pump();
-      expect(find.byKey(const ValueKey('grammar_next_card')), findsNothing);
+      expect(find.byKey(const ValueKey('grammar_next_card')), findsOneWidget);
       await tester.pump(GrammarExerciseNotifier.autoAdvanceDelay);
       await tester.pumpAndSettle();
       expect(find.text('They have lived here ___ 2019.'), findsOneWidget);

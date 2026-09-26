@@ -40,34 +40,47 @@ class _StackRevueScreenState extends ConsumerState<StackRevueScreen> {
           children: [
             _TopBar(onBack: _back),
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.pageMargin,
-                  AppSpacing.s16,
-                  AppSpacing.pageMargin,
-                  AppSpacing.s24,
+              child: stacks.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.lilac),
                 ),
-                itemCount: stacks.length + 1,
-                separatorBuilder: (_, index) => index == 0
-                    ? const SizedBox(height: AppSpacing.s8)
-                    : const ColoredBox(
-                        color: AppColors.surface,
-                        child: SizedBox(height: 1, width: double.infinity),
-                      ),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _infoVisible
-                        ? _InfoCard(
-                            onDismiss: () =>
-                                setState(() => _infoVisible = false),
-                          )
-                        : const SizedBox.shrink();
-                  }
-                  return RevueStackRow(
-                    stack: stacks[index - 1],
-                    onPlay: () => context.push('/exercise'),
-                  );
-                },
+                error: (_, _) => Center(
+                  child: Text(
+                    'Stapel konnten nicht geladen werden.',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
+                data: (stacks) => ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.pageMargin,
+                    AppSpacing.s16,
+                    AppSpacing.pageMargin,
+                    AppSpacing.s24,
+                  ),
+                  itemCount: stacks.length + 1,
+                  separatorBuilder: (_, index) => index == 0
+                      ? const SizedBox(height: AppSpacing.s8)
+                      : const ColoredBox(
+                          color: AppColors.surface,
+                          child: SizedBox(height: 1, width: double.infinity),
+                        ),
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return _infoVisible
+                          ? _InfoCard(
+                              onDismiss: () =>
+                                  setState(() => _infoVisible = false),
+                            )
+                          : const SizedBox.shrink();
+                    }
+                    return RevueStackRow(
+                      stack: stacks[index - 1],
+                      onPlay: () => context.push('/exercise'),
+                    );
+                  },
+                ),
               ),
             ),
           ],

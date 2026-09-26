@@ -31,27 +31,40 @@ class StackListScreen extends ConsumerWidget {
               },
             ),
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.pageMargin,
-                  AppSpacing.s16,
-                  AppSpacing.pageMargin,
-                  AppSpacing.s24,
+              child: stacks.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.lilac),
                 ),
-                itemCount: stacks.length + 1,
-                separatorBuilder: (_, index) => SizedBox(
-                  height: index == 0 ? AppSpacing.s8 : AppSpacing.listGap,
+                error: (_, _) => Center(
+                  child: Text(
+                    'Stapel konnten nicht geladen werden.',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return const SectionHeader('DEINE STAPEL');
-                  }
-                  final stack = stacks[index - 1];
-                  return StackListItem(
-                    stack: stack,
-                    onTap: () => context.push('/stacks/${stack.id}'),
-                  );
-                },
+                data: (stacks) => ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.pageMargin,
+                    AppSpacing.s16,
+                    AppSpacing.pageMargin,
+                    AppSpacing.s24,
+                  ),
+                  itemCount: stacks.length + 1,
+                  separatorBuilder: (_, index) => SizedBox(
+                    height: index == 0 ? AppSpacing.s8 : AppSpacing.listGap,
+                  ),
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return const SectionHeader('DEINE STAPEL');
+                    }
+                    final stack = stacks[index - 1];
+                    return StackListItem(
+                      stack: stack,
+                      onTap: () => context.push('/stacks/${stack.id}'),
+                    );
+                  },
+                ),
               ),
             ),
           ],

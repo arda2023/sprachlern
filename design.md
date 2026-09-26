@@ -349,6 +349,30 @@ Segmented Control mit genau zwei Segmenten, der zwischen zwei Eingabearten wechs
 - **Barrierefreiheit**: Jedes Segment ist als Button mit Auswahlzustand ausgezeichnet (Status nie nur über Farbe, siehe 8).
 - **Bekannte Abweichung**: Die Segmente sind mit 32 px niedriger als die in 7 geforderten 44 px Tap-Ziel. Sollte bei Gelegenheit auf eine Höhe von mindestens 44 (Segment) angehoben werden.
 
+### 5.19 Wort-Status-Balken (Erinnerungslevel)
+
+Erweitert und präzisiert den 5-Striche-Status-Indikator aus 5.7 (5 Striche à 16 × 4, Abstand 4, voll rund nach 3.3). Die Segmente füllen sich von links nach rechts und visualisieren das Erinnerungslevel des geübten Wortes:
+
+- **1 Segment gefüllt** (`--orange`): "Neues Wort! Du hast es noch nie zuvor gesehen."
+- **2 Segmente gefüllt** (`--cyan`): "Dieses Wort braucht mehr Übung."
+- **3 Segmente gefüllt** (`--cyan`): "Auf dem Weg, dieses Wort zu lernen."
+- **4 Segmente gefüllt** (`--cyan`): "Auf der Zungenspitze!"
+- **5 Segmente gefüllt** (`--success`): "Maximales Erinnerungsvermögen."
+
+**Farblogik**:
+- Nur Stufe 1 verwendet `--orange` für das gefüllte Segment.
+- Stufen 2 bis 4 verwenden `--cyan` für die gefüllten Segmente.
+- Nur Stufe 5 verwendet `--success` (Grün) für alle 5 gefüllten Segmente.
+- Ungefüllte Segmente sind immer `--surface-2` (wie beim bestehenden 5-Striche-Status-Indikator in 5.7, auf den hier verwiesen wird).
+
+### 5.20 Zeichen-Diff bei Eingabe-Antworten
+
+Bei einer getippten Antwort in einer Lückentext-Eingabekarte werden einzelne falsche, fehlende oder überzählige Buchstaben farblich markiert, statt die gesamte Eingabe pauschal als richtig oder falsch zu werten:
+
+- **Falsche / fehlende Zeichen**: in `--error` (Rot).
+- **Korrekte Zeichen**: unverändert (`--cyan`, da englischer Lerninhalt).
+- Die exakte Diff-Darstellung (fehlende vs. falsche vs. überzählige Zeichen) ist beim Bau noch zu spezifizieren (siehe Abschnitt 10).
+
 ---
 
 ## 6. Screen-Inventar
@@ -361,7 +385,7 @@ Segmented Control mit genau zwei Segmenten, der zwischen zwei Eingabearten wechs
 | **Stapel (Detail)** | Top-Bar (beim Scrollen Titel einblendend) → Icon + Level → Titel `display` → Beschreibung → Status (5.17) → Toggle-Karte "Stapel lernen" → Primär-Button "Lerne mit diesem Stapel" → aufklappbare Karte "Deine letzten 5 gesehenen Wörter..." (dreizeilige Einträge) → MEHR DAVON (Revue-Karte mit Outline-Button "Diesen Stapel durchsehen") |
 | **Stapel-Revue** | Info-Karte (schließbar, `--surface-2`) → Liste der Stapel mit Play-Buttons (Ø 44) und leerem Track |
 | **Custom-Stapel erstellen** | *Übersicht:* Top-Bar (Zurück-Pfeil, Titel "Custom-Stapel" zentriert, Text-Link "Fertigstellen" in `--lilac` rechts) → Kopfzeile "Karten: N" (`title`, `--white`) mit "+"-Button (24) rechts → Karten-Zeilen (Karte nach 5.3: `--surface`, Radius 8, Padding 16, Abstand 8; Punkt Ø 8 `--orange`; dreizeilig in der Reihenfolge von 5.17: englisches Zielwort = Lückenwort (`en-headword`, `--cyan`, Serif), deutscher Satz (`body-sm`, `--text-muted`), englischer Satz (`en-line`, `--cyan`, Serif). Die Karte übt Englisch, deshalb Serif + Cyan für Zielwort und englischen Satz; eine Karte ohne englischen Satz, angelegt vor dessen Einführung, zeigt nur die ersten beiden Zeilen); ohne Karten stattdessen zentrierter Leertext ("Noch keine Karten. Füge Wörter hinzu, um zu starten.", `body`, `--text-muted`, keine Grafik). *Hinzufügen* (vom "+" geöffnet): Top-Bar (✕ links, Titel "Wörter hinzufügen", Text-Link "Hinzufügen" rechts, bei leerem Feld 40 %; während des Speicherns ersetzt ein Lade-Indikator (24, `--lilac`) den Link bei gleicher Breite, Feld und Umschalter sind gesperrt und ein erneuter Tipp löst nichts aus) → Umschalter Wörter/Text (5.18) → Abschnittstitel ("Wörter" bzw. "Text", `title`) → Hilfetext (`body`, `--text-muted`) → mehrzeiliges Eingabefeld (`--surface`, Radius 8, Padding 16, Platzhalter `--text-muted`, Fokus 2 px `--lilac`) → Hinweis zum Trennzeichen `;` (`body-sm`, `--text-muted`) → bei fehlgeschlagenem Speichern darunter ein Fehlertext (`body`, `--error`); die Eingabe bleibt für einen neuen Versuch erhalten. Nach "Hinzufügen" zurück zur Übersicht, dort steigt "Karten: N". |
-| **Übung (Vokabeln)** | Übungs-Top-Bar → Lückentext-Karte → Übersetzungs-Karte → Tastatur-Leiste. Sheet für Grammatikhinweis. |
+| **Übung (Vokabeln)** | Übungs-Top-Bar → Lückentext-Karte → Übersetzungs-Karte → Tastatur-Leiste. Sheet für Grammatikhinweis. Nach jeder Antwort erscheint ein 'Weiter'-Text-Link (5.12) zum Fortfahren zur nächsten Karte, sofern nicht 'Automatisch nächste Karte anzeigen' aktiv ist (siehe 7). |
 | **Texte** | Carousel mit Text-Covern → Sheet mit Vorschau und Übungen ("Verben", "Beliebige Wortart") mit Play-Buttons |
 | **Text-Übung** | Fließtext mit Inline-Lücken (5.8) → Tastatur-Zusatzleiste (Icons `文A`, `⇄` links, Button "Antwort anzeigen" rechts; keine Sprungleiste) |
 | **Grammatik** | Tabs "Meine Übungen / Fertig" → Zeilenliste direkt auf `--bg` (5.10). Übung: Auswahl-Aufgaben mit Frage & Optionen unten (5.9). |
@@ -414,3 +438,4 @@ Einzige Seite im hellen Theme (wirkt wie eine eingebettete Web-Ansicht):
 - Helles Theme der restlichen App: in den Einstellungen gibt es den Punkt "Motiv" (Automatisch, zwei Farbschemata), ein helles Gesamt-Theme ist aber nicht abgebildet. Bis dahin ist nur das dunkle Theme verbindlich.
 - **Individuelle Stapel-Icon-Hintergrundfarben**: In `Alle_Stapel_Übersicht.PNG` besitzen die Kacheln der Stapel-Icons jeweils individuelle Hintergrundfarben (z. B. Pink/Magenta `#E0528B`, Türkis/Mint `#00BFA5`, Blau/Teal `#00B894` etc.). Diese sind nicht im Design-Token-Set definiert und sollten als Thema für Stapel-Metadaten oder ein erweitertes Farbsystem geklärt werden, anstatt ad hoc neue Farb-Tokens einzuführen.
 - **Farbsemantik der Statuspunkte im Wissenszentrum**: Im Wissenszentrum (`Mein_Wissen_Statistiken.PNG`) ist der Punkt für "Gesamtzahl gelernter Wörter" lila (`--lilac`), während gelernte Wörter im Stapel-Detail-Fortschrittsbalken mit `--success` (Grün) dargestellt werden. Die semantische Farbvergabe sollte vereinheitlicht oder dokumentiert werden.
+- **Spaced-Repetition-Algorithmus (Words-at-Risk-Prinzip)**: Keine neuen Wörter, solange fällige Wiederholungen offen sind; ist konzeptionell aus Lingvists eigener FAQ/Blog rekonstruiert, noch nicht implementiert. Exakte Zeichen-Diff-Darstellung bei Eingabefehlern (5.20) ist beim Bau zu spezifizieren.

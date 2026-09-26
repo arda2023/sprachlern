@@ -35,6 +35,7 @@ class GrammarAnswerOption extends StatelessWidget {
 
     return Semantics(
       button: true,
+      selected: feedback != null,
       label: _semanticLabel(isCorrect),
       child: GestureDetector(
         onTap: onTap,

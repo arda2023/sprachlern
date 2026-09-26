@@ -10,7 +10,7 @@ import 'package:sprachlern/theme/app_text_styles.dart';
 import 'package:sprachlern/widgets/app_toggle.dart';
 import 'package:sprachlern/widgets/recent_words_card.dart';
 import 'package:sprachlern/widgets/section_header.dart';
-import 'package:sprachlern/widgets/stack_status_bar.dart';
+import 'package:sprachlern/widgets/difficulty_indicator.dart';
 
 class StackDetailScreen extends ConsumerWidget {
   const StackDetailScreen({super.key, required this.stackId});
@@ -34,7 +34,7 @@ class StackDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final detail = ref.watch(stackDetailsProvider)[stackId];
+    final detail = ref.watch(stackDetailsProvider(stackId));
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -43,9 +43,22 @@ class StackDetailScreen extends ConsumerWidget {
           children: [
             _TopBar(onBack: () => _back(context)),
             Expanded(
-              child: detail == null
-                  ? const _MissingStack()
-                  : _StackDetailBody(detail: detail),
+              child: detail.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.lilac),
+                ),
+                error: (_, _) => Center(
+                  child: Text(
+                    'Stapel konnte nicht geladen werden.',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
+                data: (detail) => detail == null
+                    ? const _MissingStack()
+                    : _StackDetailBody(detail: detail),
+              ),
             ),
           ],
         ),
@@ -104,7 +117,23 @@ class _StackDetailBody extends StatelessWidget {
             style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: AppSpacing.s24),
-          StackStatusBar(detail: detail),
+          // Global catalog counts are not per-user progress.
+          Align(
+            alignment: Alignment.centerRight,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  detail.difficultyLabel,
+                  style: AppTextStyles.bodySm.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s4),
+                DifficultyIndicator(level: detail.stack.difficultyLevel),
+              ],
+            ),
+          ),
           const SizedBox(height: AppSpacing.s24),
           const _LearnToggleCard(),
           const SizedBox(height: AppSpacing.s16),

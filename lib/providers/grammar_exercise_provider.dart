@@ -91,7 +91,9 @@ class GrammarExerciseNotifier extends Notifier<GrammarExerciseState> {
   }
 
   void selectOption(int index) {
-    if (index < 0 || index >= state.exercise.options.length) {
+    if (state.selectedOptionIndex != null ||
+        index < 0 ||
+        index >= state.exercise.options.length) {
       return;
     }
 
@@ -108,7 +110,8 @@ class GrammarExerciseNotifier extends Notifier<GrammarExerciseState> {
     }
   }
 
-  /// Moves to the next card, cycling back to the start of the mock deck.
+  /// Moves to the next card from either "Weiter" or auto-advance, cycling back
+  /// to the start of the mock deck.
   void nextCard() {
     _cancelAutoAdvance();
     state = state.copyWith(

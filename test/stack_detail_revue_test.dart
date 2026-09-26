@@ -1,3 +1,10 @@
+import 'dart:async';
+
+import 'package:sprachlern/models/content_data.dart';
+import 'package:sprachlern/providers/content_provider.dart';
+
+import 'helpers/stack_fixtures.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,47 +16,80 @@ import 'package:sprachlern/widgets/recent_words_card.dart';
 import 'package:sprachlern/widgets/revue_stack_row.dart';
 import 'package:sprachlern/widgets/stack_status_bar.dart';
 
-Widget _app(Widget home) =>
-    ProviderScope(child: MaterialApp(home: home));
+Widget _app(Widget home) => ProviderScope(
+  overrides: [
+    stackListProvider.overrideWith((ref) async => fixtureStacks),
+    stackDetailsProvider.overrideWith((ref, id) async => fixtureDetails[id]),
+  ],
+  child: MaterialApp(home: home),
+);
 
 void main() {
-  testWidgets('Detailscreen zeigt Status und klappt Wortliste auf und zu', (
+  testWidgets('Stapeldetail zeigt Laden und anschließend Fehler', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(375, 1400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
+    final pending = Completer<StackDetailData?>();
     await tester.pumpWidget(
-      _app(const StackDetailScreen(stackId: 'reisen-und-alltag')),
+      ProviderScope(
+        overrides: [
+          stackDetailsProvider.overrideWith((ref, id) => pending.future),
+        ],
+        child: const MaterialApp(home: StackDetailScreen(stackId: 'test')),
+      ),
     );
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    pending.completeError(StateError('fake query failure'));
     await tester.pumpAndSettle();
-
-    // Data comes from the provider, not from the widget.
-    expect(find.text('Reisen und Alltag'), findsOneWidget);
-    expect(find.byType(StackStatusBar), findsOneWidget);
-    expect(find.text('41 von 126 neuen Wörtern'), findsOneWidget);
-    expect(find.text('28 Wörter gelernt'), findsOneWidget);
-    expect(find.text('Mittleres Niveau'), findsOneWidget);
-    expect(find.byKey(const ValueKey('stack_detail_progress')), findsOneWidget);
-    expect(find.byType(RecentWordsCard), findsOneWidget);
-
-    // Collapsed by default.
-    expect(find.text('Gepäck'), findsNothing);
-
-    await tester.tap(find.byKey(const ValueKey('recent_words_toggle')));
-    await tester.pumpAndSettle();
-
-    // All five mock entries, each with its three lines.
-    expect(find.text('Gepäck'), findsOneWidget);
-    expect(find.text('Mein Gepäck ist noch nicht angekommen.'), findsOneWidget);
-    expect(find.text('My luggage has not arrived yet.'), findsOneWidget);
-    expect(find.text('umsteigen'), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey('recent_words_toggle')));
-    await tester.pumpAndSettle();
-    expect(find.text('Gepäck'), findsNothing);
+    expect(find.text('Stapel konnte nicht geladen werden.'), findsOneWidget);
   });
+
+  testWidgets('Unbekannter Stapel zeigt Hinweis', (tester) async {
+    await tester.pumpWidget(_app(const StackDetailScreen(stackId: 'unknown')));
+    await tester.pumpAndSettle();
+    expect(find.text('Dieser Stapel ist nicht verfügbar.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'Detailscreen zeigt Niveau ohne Fortschritt und klappt Wortliste auf und zu',
+    (tester) async {
+      tester.view.physicalSize = const Size(375, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        _app(const StackDetailScreen(stackId: 'reisen-und-alltag')),
+      );
+      await tester.pumpAndSettle();
+
+      // Data comes from the provider, not from the widget.
+      expect(find.text('Reisen und Alltag'), findsOneWidget);
+      expect(find.byType(StackStatusBar), findsNothing);
+      expect(find.text('41 von 126 neuen Wörtern'), findsNothing);
+      expect(find.text('28 Wörter gelernt'), findsNothing);
+      expect(find.text('Mittleres Niveau'), findsOneWidget);
+      expect(find.byKey(const ValueKey('stack_detail_progress')), findsNothing);
+      expect(find.byType(RecentWordsCard), findsOneWidget);
+
+      // Collapsed by default.
+      expect(find.text('Gepäck'), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('recent_words_toggle')));
+      await tester.pumpAndSettle();
+
+      // All five mock entries, each with its three lines.
+      expect(find.text('Gepäck'), findsOneWidget);
+      expect(
+        find.text('Mein Gepäck ist noch nicht angekommen.'),
+        findsOneWidget,
+      );
+      expect(find.text('My luggage has not arrived yet.'), findsOneWidget);
+      expect(find.text('umsteigen'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('recent_words_toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Gepäck'), findsNothing);
+    },
+  );
 
   testWidgets('Revue zeigt Info-Karte und Zeilen mit leerem Track', (
     tester,
@@ -106,15 +146,25 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(child: MaterialApp.router(routerConfig: router)),
+      ProviderScope(
+        overrides: [
+          stackListProvider.overrideWith((ref) async => fixtureStacks),
+          stackDetailsProvider.overrideWith(
+            (ref, id) async => fixtureDetails[id],
+          ),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('stack_item_arbeit-und-termine')));
+    await tester.tap(
+      find.byKey(const ValueKey('stack_item_arbeit-und-termine')),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Arbeit und Termine'), findsOneWidget);
     expect(find.text('Fortgeschritten'), findsOneWidget);
-    expect(find.text('16 von 40 neuen Wörtern'), findsOneWidget);
+    expect(find.text('16 von 40 neuen Wörtern'), findsNothing);
   });
 }

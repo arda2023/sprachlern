@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/assets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sprachlern/models/settings_data.dart';
 import 'package:sprachlern/providers/grammar_exercise_provider.dart';
-import 'package:sprachlern/providers/settings_provider.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
@@ -17,9 +15,16 @@ class GrammarExerciseScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(grammarExerciseProvider);
     final exercise = state.exercise;
-    final autoAdvance = ref
-        .watch(settingsProvider)
-        .isToggleOn(settingsAutoAdvanceKey);
+    final selectedOptionIndex = state.selectedOptionIndex;
+    final correctAnswer = exercise.options.firstWhere(
+      (option) => option.isCorrectAnswer,
+    );
+    final displayedSentence = selectedOptionIndex == null
+        ? exercise.sentenceWithGap
+        : exercise.sentenceWithGap.replaceFirst(
+            '___',
+            correctAnswer.displayText,
+          );
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -49,7 +54,8 @@ class GrammarExerciseScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      exercise.sentenceWithGap,
+                      displayedSentence,
+                      key: const ValueKey('grammar_sentence'),
                       textAlign: TextAlign.center,
                       style: AppTextStyles.sentence,
                     ),
@@ -85,10 +91,7 @@ class GrammarExerciseScreen extends ConsumerWidget {
                         ),
                       );
                     }),
-                    // With "Nächste Karte automatisch" off the deck waits for
-                    // an explicit step (design.md 7); with it on the notifier
-                    // advances by itself, so no link is needed.
-                    if (state.isAnsweredCorrectly && !autoAdvance) ...[
+                    if (selectedOptionIndex != null) ...[
                       const SizedBox(height: AppSpacing.s16),
                       _NextCardLink(
                         onTap: () => ref
