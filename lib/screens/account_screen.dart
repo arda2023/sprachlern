@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sprachlern/providers/account_provider.dart';
+import 'package:sprachlern/providers/auth_provider.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
@@ -129,20 +130,20 @@ class _LegalLinks extends StatelessWidget {
 }
 
 /// Outline button per design.md 5.12: 1.5 px white border, radius 12, 46 tall.
-/// Inert for this increment — signing out needs a backend, and there is none.
-class _SignOutButton extends StatelessWidget {
+/// It only signs out; the router's auth redirect then shows /login.
+class _SignOutButton extends ConsumerWidget {
   const _SignOutButton();
 
   static const double _height = 46.0;
   static const double _borderWidth = 1.5;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       height: _height,
       child: OutlinedButton(
         key: const ValueKey('account_sign_out'),
-        onPressed: _doNothing,
+        onPressed: () => ref.read(authServiceProvider).signOut(),
         style: OutlinedButton.styleFrom(
           // No backgroundColor: design.md 5.12 wants the outline button
           // transparent, which is OutlinedButton's default.
