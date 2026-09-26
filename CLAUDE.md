@@ -77,8 +77,8 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 - **Sprache**: Dart
 - **State Management**: Riverpod (`flutter_riverpod`)
 - **Navigation / Routing**: `go_router`
-- **Backend**: Supabase ist für ein späteres Backend-Inkrement geplant, aber aktuell noch nicht integriert.
-- **KI-Anbindung (geplant)**: Für automatische Satzübersetzung bei Custom-Stapeln (Wörter/Text-Eingabe) wird ein LLM (Kandidat: Gemini Flash oder GPT-4o mini, günstige Wahl für einfache Übersetzungsaufgaben) über eine Supabase Edge Function angebunden — der API-Key darf niemals im Client-Bundle liegen. Noch nicht implementiert.
+- **Backend**: Supabase ist eingerichtet (Projekt, Auth mit E-Mail-Login, Tabellen `custom_stacks`/`custom_stack_cards` mit RLS). Flutter-Client-Anbindung noch nicht implementiert.
+- **KI-Anbindung**: Supabase Edge Function `generate-sentence` ruft Gemini 3.8 Flash (Modell `gemini-3.8-flash`) auf, um bei Custom-Stapeln aus einem deutschen Satz eine englische Übersetzung samt Lückenwort zu generieren. API-Key liegt als Supabase-Secret `GEMINI`, niemals im Client-Bundle. Implementiert, noch nicht an die Flutter-App angebunden.
 
 ### Build- und Test-Befehle
 

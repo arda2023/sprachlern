@@ -16,10 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Sprachlern',
       routerConfig: appRouter,
-      builder: (context, child) => FTheme(
-        data: FTheme.neutral.dark.touch,
-        child: child!,
-      ),
+      builder: (context, child) =>
+          FTheme(data: FTheme.neutral.dark.touch, child: child!),
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.bg,
         colorScheme: ColorScheme.dark(
