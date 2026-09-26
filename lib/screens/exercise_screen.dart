@@ -243,7 +243,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
                           solutionRevealed: _solutionRevealed,
                           isCorrect: _isCorrect,
                           onAnswerChanged: (value) {
-                            if (_answer == value) return;
+                            if (_answer == value && !_isWrong) return;
                             setState(() {
                               _answer = value;
                               // Feedback belongs to the confirmed input.

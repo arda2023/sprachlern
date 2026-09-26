@@ -22,8 +22,7 @@ class _WordListScreenState extends ConsumerState<WordListScreen> {
   final _searchController = TextEditingController();
 
   /// One key per letter, attached to the first row of that letter, so the
-  /// A–Z bar can scroll there. The whole list is built at once (no lazy
-  /// loading); fine for a mock list, to be revisited for real word counts.
+  /// A–Z bar can scroll there.
   final _letterKeys = <String, GlobalKey>{};
   String _query = '';
 
@@ -50,14 +49,59 @@ class _WordListScreenState extends ConsumerState<WordListScreen> {
     Scrollable.ensureVisible(letterContext, duration: Duration.zero);
   }
 
-  void _openInfo(WordListEntry entry) {
-    final info = ref.read(wordInfoProvider(entry.headword));
-    if (info != null) showWordInfoSheet(context, info);
+  Future<void> _openInfo(WordListEntry entry) async {
+    final info = await ref.read(wordInfoProvider(entry.headword).future);
+    if (!mounted || info == null) return;
+    showWordInfoSheet(context, info);
   }
 
   @override
   Widget build(BuildContext context) {
-    final entries = _filter(ref.watch(wordListProvider));
+    final words = ref.watch(wordListProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _TopBar(
+              onBack: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/content');
+                }
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageMargin,
+                AppSpacing.s16,
+                AppSpacing.pageMargin,
+                AppSpacing.s8,
+              ),
+              child: AppSearchField(
+                key: const ValueKey('word_search_field'),
+                controller: _searchController,
+                onChanged: (value) => setState(() => _query = value),
+              ),
+            ),
+            Expanded(
+              child: words.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.lilac),
+                ),
+                error: (_, _) => const _LoadErrorState(),
+                data: (entries) => _buildEntries(_filter(entries)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEntries(List<WordListEntry> entries) {
     final letters = <String>[];
     final rows = <Widget>[];
 
@@ -88,65 +132,47 @@ class _WordListScreenState extends ConsumerState<WordListScreen> {
       rows.add(row);
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _TopBar(
-              onBack: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/content');
-                }
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.pageMargin,
-                AppSpacing.s16,
-                AppSpacing.pageMargin,
-                AppSpacing.s8,
+    return entries.isEmpty
+        ? const _EmptyState()
+        : Stack(
+            children: [
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.s8,
+                    0,
+                    AppSpacing.pageMargin,
+                    AppSpacing.s24,
+                  ),
+                  child: Column(children: rows),
+                ),
               ),
-              child: AppSearchField(
-                key: const ValueKey('word_search_field'),
-                controller: _searchController,
-                onChanged: (value) => setState(() => _query = value),
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                width: AppSpacing.pageMargin,
+                child: Center(
+                  child: _AzIndexBar(letters: letters, onSelect: _jumpTo),
+                ),
               ),
-            ),
-            Expanded(
-              child: entries.isEmpty
-                  ? const _EmptyState()
-                  : Stack(
-                      children: [
-                        Positioned.fill(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.s8,
-                              0,
-                              AppSpacing.pageMargin,
-                              AppSpacing.s24,
-                            ),
-                            child: Column(children: rows),
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          bottom: 0,
-                          width: AppSpacing.pageMargin,
-                          child: Center(
-                            child: _AzIndexBar(
-                              letters: letters,
-                              onSelect: _jumpTo,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ],
+            ],
+          );
+  }
+}
+
+class _LoadErrorState extends StatelessWidget {
+  const _LoadErrorState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sheetMargin),
+        child: Text(
+          'Wörter konnten nicht geladen werden.',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
         ),
       ),
     );

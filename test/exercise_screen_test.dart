@@ -15,6 +15,7 @@ import 'package:sprachlern/services/supabase_client.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/widgets/exercise_input_bar.dart';
+import 'package:sprachlern/widgets/fill_in_card.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'helpers/stack_fixtures.dart';
@@ -147,6 +148,22 @@ Future<void> _solveFirstCard(WidgetTester tester) async {
 
 void main() {
   testWidgets(
+    'Regression: normal exercise keeps status indicator and new-word label',
+    (tester) async {
+      await _pumpExercise(tester);
+      expect(find.byType(StatusIndicator), findsOneWidget);
+      expect(
+        tester.widget<FillInCard>(find.byType(FillInCard)).showStatusIndicator,
+        isTrue,
+      );
+      expect(find.byKey(const ValueKey('status_segment_0')), findsOneWidget);
+      expect(find.byKey(const ValueKey('status_segment_4')), findsOneWidget);
+      await _solveFirstCard(tester);
+      expect(find.byType(StatusIndicator), findsOneWidget);
+      expect(find.text('Neues Wort'), findsOneWidget);
+    },
+  );
+  testWidgets(
     'Fall 1: leeres Feld – "Wort erfahren" zeigt Lösung ohne Rot, wertet false',
     (tester) async {
       final repository = await _pumpExercise(tester);
@@ -219,8 +236,32 @@ void main() {
       ]);
       expect(_onCard('word-1'), isTrue);
       expect(_actionLabel(tester), 'Eingeben');
+
+      final field = tester.widget<TextField>(
+        find.byKey(const ValueKey('diff_input_text_field')),
+      );
+      expect(field.controller!.text, isEmpty);
+      expect(find.text('Frut'), findsNothing);
     },
   );
+
+  testWidgets('Alte Eingabe steht nach Fehlbewertung nicht mehr im Feld', (
+    tester,
+  ) async {
+    await _pumpExercise(tester);
+
+    await _type(tester, 'Frut');
+    expect(find.text('Frut'), findsOneWidget);
+
+    await _tapAction(tester);
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('diff_input_text_field')),
+    );
+    expect(field.controller!.text, isEmpty);
+    expect(find.text('Frut'), findsNothing);
+    expect(_hint(tester), 'Fr...');
+  });
 
   testWidgets(
     'Fall 4: zweiter Fehlversuch – ganze Lösung "Fruit", kein zweiter Aufruf',
@@ -529,6 +570,34 @@ void main() {
       ]);
       expect(container.read(provider).requireValue.currentExercise, isNull);
       expect(container.read(provider).requireValue.currentIndex, 2);
+    },
+  );
+
+  testWidgets(
+    'Status-Indikator zeigt Cyan bei word-1 (Level 2) und surface2 mit "Neues Wort" bei word-2 (Level 0)',
+    (tester) async {
+      await _pumpExercise(tester);
+
+      Color segmentColor(int index) {
+        final container = tester.widget<Container>(
+          find.byKey(ValueKey('status_segment_$index')),
+        );
+        return (container.decoration! as BoxDecoration).color!;
+      }
+
+      // word-1 hat memory_level: 2 -> zwei Cyan-Segmente, kein "Neues Wort"
+      expect(segmentColor(0), AppColors.cyan);
+      expect(segmentColor(1), AppColors.cyan);
+      expect(segmentColor(2), AppColors.surface2);
+      expect(find.text('Neues Wort'), findsNothing);
+
+      await _solveFirstCard(tester);
+
+      // word-2 hat memory_level: 0 -> alle Segmente surface2, "Neues Wort" sichtbar
+      expect(segmentColor(0), AppColors.surface2);
+      expect(segmentColor(1), AppColors.surface2);
+      expect(segmentColor(2), AppColors.surface2);
+      expect(find.text('Neues Wort'), findsOneWidget);
     },
   );
 }

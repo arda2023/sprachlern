@@ -74,31 +74,35 @@ void main() {
     expect(find.text('Fruit'), findsNothing);
   });
 
-  testWidgets('Fall 3: erster Fehlversuch bei "Fruit" – roter Rand, "Fr..."', (
+  testWidgets('Fall 3: erster Fehlversuch bei "Fruit" – roter Rand, "Fr...", Feld geleert', (
     tester,
   ) async {
-    await tester.pumpWidget(_app(isWrong: true, attemptCount: 1));
+    await tester.pumpWidget(_app());
     await tester.enterText(find.byType(TextField), 'Frut');
-    await tester.pump();
+    await tester.pumpWidget(_app(isWrong: true, attemptCount: 1));
 
     expect(_frame(tester).top.color, AppColors.error);
     expect(_frame(tester).top.width, 2);
+    // Feld wurde geleert: alte Eingabe steht nicht mehr drin
+    expect(_field(tester).controller!.text, isEmpty);
+    expect(find.text('Frut'), findsNothing);
+
     final hint = _textByKey(tester, 'diff_input_hint');
     expect(hint.data, 'Fr...');
     expect(hint.style!.color, _dimmedError);
-    // The typed text itself stays cyan.
-    expect(_field(tester).style!.color, AppColors.cyan);
   });
 
   testWidgets('Fall 4: ab dem zweiten Fehlversuch ganze Lösung "Fruit"', (
     tester,
   ) async {
     for (final attemptCount in [2, 3]) {
-      await tester.pumpWidget(_app(isWrong: true, attemptCount: attemptCount));
+      await tester.pumpWidget(_app());
       await tester.enterText(find.byType(TextField), 'Frut');
-      await tester.pump();
+      await tester.pumpWidget(_app(isWrong: true, attemptCount: attemptCount));
 
       expect(_frame(tester).top.color, AppColors.error);
+      expect(_field(tester).controller!.text, isEmpty);
+      expect(find.text('Frut'), findsNothing);
       final hint = _textByKey(tester, 'diff_input_hint');
       expect(hint.data, 'Fruit');
       expect(hint.style!.color, _dimmedError);
@@ -109,11 +113,15 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(targetAnswer: 'Go', isWrong: true, attemptCount: 1),
+      _app(targetAnswer: 'Go'),
     );
     await tester.enterText(find.byType(TextField), 'Ga');
-    await tester.pump();
+    await tester.pumpWidget(
+      _app(targetAnswer: 'Go', isWrong: true, attemptCount: 1),
+    );
 
+    expect(_field(tester).controller!.text, isEmpty);
+    expect(find.text('Ga'), findsNothing);
     expect(_textByKey(tester, 'diff_input_hint').data, 'G...');
   });
 
@@ -121,12 +129,35 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(targetAnswer: 'cat', isWrong: true, attemptCount: 1),
+      _app(targetAnswer: 'cat'),
     );
     await tester.enterText(find.byType(TextField), 'cot');
+    await tester.pumpWidget(
+      _app(targetAnswer: 'cat', isWrong: true, attemptCount: 1),
+    );
+
+    expect(_field(tester).controller!.text, isEmpty);
+    expect(find.text('cot'), findsNothing);
+    expect(_textByKey(tester, 'diff_input_hint').data, 'ca...');
+  });
+
+  testWidgets('Weitertippen nach Fehlversuch: Hinweis verschwindet, Text ist cyan', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.enterText(find.byType(TextField), 'Frut');
+    await tester.pumpWidget(_app(isWrong: true, attemptCount: 1));
+
+    expect(_textByKey(tester, 'diff_input_hint').data, 'Fr...');
+    expect(_field(tester).controller!.text, isEmpty);
+
+    // Nutzer tippt direkt weiter in das geleerte Feld:
+    await tester.enterText(find.byType(TextField), 'F');
     await tester.pump();
 
-    expect(_textByKey(tester, 'diff_input_hint').data, 'ca...');
+    expect(find.byKey(const ValueKey('diff_input_hint')), findsNothing);
+    expect(_field(tester).controller!.text, 'F');
+    expect(_field(tester).style!.color, AppColors.cyan);
   });
 
   testWidgets('Fall 1: Wort erfahren – Lösung gedimmt in Cyan, kein Rot', (

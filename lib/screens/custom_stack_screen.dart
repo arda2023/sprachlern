@@ -53,6 +53,18 @@ class CustomStackScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        if (stack.cards.isNotEmpty)
+                          IconButton(
+                            key: const ValueKey('custom_stack_exercise'),
+                            tooltip: 'Custom-Stapel üben',
+                            onPressed: () =>
+                                context.push('/custom-stack/exercise'),
+                            icon: const Icon(
+                              FLucideIcons.play,
+                              size: _topBarIconSize,
+                              color: AppColors.white,
+                            ),
+                          ),
                         IconButton(
                           key: const ValueKey('custom_stack_add'),
                           tooltip: 'Wörter hinzufügen',

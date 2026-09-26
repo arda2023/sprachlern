@@ -80,6 +80,12 @@ class _DiffInputFieldState extends State<DiffInputField> {
       if (_ownsFocusNode) _focusNode.dispose();
       _setFocusNode(widget.focusNode);
     }
+    final becameWrong = !oldWidget.isWrong && widget.isWrong;
+    final repeatedWrongAttempt =
+        widget.isWrong && widget.attemptCount != oldWidget.attemptCount;
+    if (becameWrong || repeatedWrongAttempt) {
+      _controller.clear();
+    }
   }
 
   @override
@@ -96,6 +102,7 @@ class _DiffInputFieldState extends State<DiffInputField> {
     final hint = widget.isWrong
         ? _hintFor(widget.targetAnswer, widget.attemptCount)
         : null;
+    final showHint = isEmpty && hint != null;
     // In the gap's own colour the frame is invisible, so switching to red or
     // green does not change the size.
     final frameColor = widget.isWrong
@@ -116,78 +123,79 @@ class _DiffInputFieldState extends State<DiffInputField> {
         border: Border.all(color: frameColor, width: _frameWidth),
       ),
       child: IntrinsicWidth(
-        child: Row(
+        child: Stack(
+          alignment: Alignment.centerLeft,
           children: [
-            Expanded(
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  TextField(
-                    key: const ValueKey('diff_input_text_field'),
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    readOnly: widget.isCorrect,
-                    onChanged: (value) {
-                      setState(() {});
-                      widget.onChanged(value);
-                    },
-                    onSubmitted: widget.onSubmitted,
-                    textInputAction: TextInputAction.done,
-                    maxLines: 1,
-                    cursorColor: AppColors.cyan,
-                    cursorHeight: _cursorHeight,
-                    style: AppTextStyles.sentence,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.s8,
-                      ),
-                      isDense: true,
-                    ),
-                  ),
-                  if (showSolution)
-                    // Not positioned: the revealed word sizes the gap.
-                    IgnorePointer(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s8,
-                        ),
-                        child: Text(
-                          widget.targetAnswer,
-                          key: const ValueKey('diff_input_solution'),
-                          maxLines: 1,
-                          style: AppTextStyles.sentence.copyWith(
-                            color: AppColors.cyan.withValues(
-                              alpha: _dimmedOpacity,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  else if (isEmpty)
-                    const Positioned(
-                      left: AppSpacing.s8,
-                      child: IgnorePointer(
-                        child: SizedBox(
-                          key: ValueKey('diff_input_cursor'),
-                          width: _cursorWidth,
-                          height: _cursorHeight,
-                          child: ColoredBox(color: AppColors.cyan),
-                        ),
-                      ),
-                    ),
-                ],
+            TextField(
+              key: const ValueKey('diff_input_text_field'),
+              controller: _controller,
+              focusNode: _focusNode,
+              readOnly: widget.isCorrect,
+              onChanged: (value) {
+                setState(() {});
+                widget.onChanged(value);
+              },
+              onSubmitted: widget.onSubmitted,
+              textInputAction: TextInputAction.done,
+              maxLines: 1,
+              cursorColor: AppColors.cyan,
+              cursorHeight: _cursorHeight,
+              style: AppTextStyles.sentence,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s8,
+                ),
+                isDense: true,
               ),
             ),
-            if (hint != null)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.s8),
-                child: Text(
-                  hint,
-                  key: const ValueKey('diff_input_hint'),
-                  maxLines: 1,
-                  style: AppTextStyles.sentence.copyWith(
-                    color: AppColors.error.withValues(alpha: _dimmedOpacity),
+            if (showSolution)
+              // Not positioned: the revealed word sizes the gap.
+              IgnorePointer(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s8,
+                  ),
+                  child: Text(
+                    widget.targetAnswer,
+                    key: const ValueKey('diff_input_solution'),
+                    maxLines: 1,
+                    style: AppTextStyles.sentence.copyWith(
+                      color: AppColors.cyan.withValues(
+                        alpha: _dimmedOpacity,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else if (showHint)
+              // Not positioned: the hint sizes the gap.
+              IgnorePointer(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s8,
+                  ),
+                  child: Text(
+                    hint,
+                    key: const ValueKey('diff_input_hint'),
+                    maxLines: 1,
+                    style: AppTextStyles.sentence.copyWith(
+                      color: AppColors.error.withValues(
+                        alpha: _dimmedOpacity,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else if (isEmpty)
+              const Positioned(
+                left: AppSpacing.s8,
+                child: IgnorePointer(
+                  child: SizedBox(
+                    key: ValueKey('diff_input_cursor'),
+                    width: _cursorWidth,
+                    height: _cursorHeight,
+                    child: ColoredBox(color: AppColors.cyan),
                   ),
                 ),
               ),

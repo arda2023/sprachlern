@@ -6,6 +6,7 @@ import 'package:sprachlern/providers/auth_provider.dart';
 import 'package:sprachlern/screens/account_screen.dart';
 import 'package:sprachlern/screens/add_words_screen.dart';
 import 'package:sprachlern/screens/custom_stack_screen.dart';
+import 'package:sprachlern/screens/custom_stack_exercise_screen.dart';
 import 'package:sprachlern/screens/content_screen.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
 import 'package:sprachlern/screens/grammar_explanation_screen.dart';
@@ -15,7 +16,6 @@ import 'package:sprachlern/screens/home_screen.dart';
 import 'package:sprachlern/screens/knowledge_center_screen.dart';
 import 'package:sprachlern/screens/learn_screen.dart';
 import 'package:sprachlern/screens/login_screen.dart';
-import 'package:sprachlern/screens/progress_screen.dart';
 import 'package:sprachlern/screens/register_screen.dart';
 import 'package:sprachlern/screens/settings_screen.dart';
 import 'package:sprachlern/screens/stack_detail_screen.dart';
@@ -87,7 +87,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/progress',
-                builder: (_, _) => const ProgressScreen(),
+                builder: (_, _) => const WordListScreen(),
               ),
             ],
           ),
@@ -154,6 +154,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const CustomStackScreen(),
         routes: [
           GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen()),
+          GoRoute(
+            path: 'exercise',
+            builder: (_, _) => const CustomStackExerciseScreen(),
+          ),
         ],
       ),
       GoRoute(

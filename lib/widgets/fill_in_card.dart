@@ -17,9 +17,11 @@ class FillInCard extends StatelessWidget {
     required this.onAnswerChanged,
     required this.onAnswerSubmitted,
     required this.onGrammarHintTap,
+    this.showStatusIndicator = true,
   });
 
   final ExerciseData exercise;
+  final bool showStatusIndicator;
 
   // Feedback state of the gap, see [DiffInputField].
   final bool isWrong;
@@ -45,8 +47,10 @@ class FillInCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StatusIndicator(status: exercise.wordStatus),
-          const SizedBox(height: AppSpacing.s16),
+          if (showStatusIndicator) ...[
+            _StatusIndicator(status: exercise.wordStatus),
+            const SizedBox(height: AppSpacing.s16),
+          ],
           Wrap(
             spacing: AppSpacing.s4,
             runSpacing: AppSpacing.s8,
@@ -100,8 +104,8 @@ class FillInCard extends StatelessWidget {
   }
 }
 
-class _StatusIndicator extends StatelessWidget {
-  const _StatusIndicator({required this.status});
+class StatusIndicator extends StatelessWidget {
+  const StatusIndicator({super.key, required this.status});
 
   final int status;
 
@@ -109,6 +113,17 @@ class _StatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final filledStrokes = status.clamp(0, 5);
     final isNewWord = status <= 1;
+
+    final Color filledColor;
+    if (filledStrokes == 1) {
+      filledColor = AppColors.orange;
+    } else if (filledStrokes >= 2 && filledStrokes <= 4) {
+      filledColor = AppColors.cyan;
+    } else if (filledStrokes == 5) {
+      filledColor = AppColors.success;
+    } else {
+      filledColor = AppColors.surface2;
+    }
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -118,12 +133,11 @@ class _StatusIndicator extends StatelessWidget {
           (index) => Padding(
             padding: EdgeInsets.only(right: index == 4 ? 0 : AppSpacing.s4),
             child: Container(
+              key: ValueKey('status_segment_$index'),
               width: FillInCard._statusWidth,
               height: FillInCard._statusHeight,
               decoration: BoxDecoration(
-                color: index < filledStrokes
-                    ? AppColors.orange
-                    : AppColors.surface2,
+                color: index < filledStrokes ? filledColor : AppColors.surface2,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
               ),
             ),
@@ -140,6 +154,8 @@ class _StatusIndicator extends StatelessWidget {
     );
   }
 }
+
+typedef _StatusIndicator = StatusIndicator;
 
 class _TranslatableToken extends StatelessWidget {
   const _TranslatableToken({required this.token});
