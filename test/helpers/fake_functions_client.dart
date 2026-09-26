@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Stands in for the `generate-sentence` Edge Function — no network.
@@ -17,6 +19,10 @@ class FakeFunctionsClient implements FunctionsClient {
   /// When set, returned as the response body instead of a translation.
   Object? rawResponse;
 
+  /// When set, every call waits for it after being recorded — to observe the
+  /// screen while the function is still running.
+  Completer<void>? gate;
+
   @override
   Future<FunctionResponse> invoke(
     String functionName, {
@@ -34,6 +40,7 @@ class FakeFunctionsClient implements FunctionsClient {
     final sentence =
         (body! as Map<String, dynamic>)['germanSentence'] as String;
     requestedSentences.add(sentence);
+    await gate?.future;
 
     if (failWith case final error?) throw error;
     if (rawResponse case final raw?) {

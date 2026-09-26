@@ -19,12 +19,17 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
   final _controller = TextEditingController();
   InputMode _mode = InputMode.words;
 
+  /// True from the tap until the cards are stored or the save failed. Every
+  /// entry costs an Edge Function call, so saving takes noticeable time.
+  bool _saving = false;
+  String? _error;
+
   static const double _topBarHeight = 44.0;
   static const double _topBarIconSize = 24.0;
   static const double _disabledOpacity = 0.4;
   static const int _fieldLines = 6;
 
-  bool get _canSubmit => _controller.text.trim().isNotEmpty;
+  bool get _canSubmit => !_saving && _controller.text.trim().isNotEmpty;
 
   @override
   void initState() {
@@ -43,13 +48,33 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
   void _onTextChanged() => setState(() {});
 
   Future<void> _submit() async {
+    // Set before the first await, so a second tap cannot start another save
+    // and store the same cards twice.
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+
     final raw = _controller.text;
     final notifier = ref.read(customStackProvider.notifier);
 
-    if (_mode == InputMode.words) {
-      await notifier.addFromWords(raw);
-    } else {
-      await notifier.addFromText(raw);
+    try {
+      if (_mode == InputMode.words) {
+        await notifier.addFromWords(raw);
+      } else {
+        await notifier.addFromText(raw);
+      }
+    } on Exception {
+      // Nothing was stored (generation fails as a whole before the insert),
+      // so the input stays for a retry.
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error =
+            'Die Karten konnten nicht erstellt werden. Bitte versuche es '
+            'erneut.';
+      });
+      return;
     }
 
     if (!mounted) return;
@@ -70,7 +95,7 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _TopBar(onSubmit: _canSubmit ? _submit : null),
+            _TopBar(onSubmit: _canSubmit ? _submit : null, saving: _saving),
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.pageMargin,
@@ -83,7 +108,9 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
                 children: [
                   InputModeToggle(
                     mode: _mode,
-                    onChanged: (mode) => setState(() => _mode = mode),
+                    onChanged: (mode) {
+                      if (!_saving) setState(() => _mode = mode);
+                    },
                   ),
                   const SizedBox(height: AppSpacing.s24),
                   Text(
@@ -105,6 +132,7 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
                   TextField(
                     key: const ValueKey('add_words_field'),
                     controller: _controller,
+                    enabled: !_saving,
                     maxLines: _fieldLines,
                     cursorColor: AppColors.lilac,
                     style: AppTextStyles.body.copyWith(color: AppColors.white),
@@ -150,6 +178,19 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
                       color: AppColors.textMuted,
                     ),
                   ),
+                  if (_error != null) ...[
+                    const SizedBox(height: AppSpacing.s16),
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _error!,
+                        key: const ValueKey('add_words_error'),
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -161,10 +202,15 @@ class _AddWordsScreenState extends ConsumerState<AddWordsScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onSubmit});
+  const _TopBar({required this.onSubmit, required this.saving});
 
   /// `null` disables the action — design.md 5.12: 40 % opacity when disabled.
   final Future<void> Function()? onSubmit;
+
+  /// Shows a spinner in place of the link while the cards are being saved.
+  final bool saving;
+
+  static const double _spinnerStroke = 2.0;
 
   @override
   Widget build(BuildContext context) {
@@ -206,14 +252,43 @@ class _TopBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.pageMargin),
             child: Opacity(
-              opacity: enabled ? 1.0 : _AddWordsScreenState._disabledOpacity,
+              // Saving is busy, not unavailable: no dimming.
+              opacity: enabled || saving
+                  ? 1.0
+                  : _AddWordsScreenState._disabledOpacity,
               child: GestureDetector(
                 key: const ValueKey('add_words_submit'),
                 onTap: enabled ? () => onSubmit!() : null,
                 behavior: HitTestBehavior.opaque,
-                child: Text(
-                  'Hinzufügen',
-                  style: AppTextStyles.title.copyWith(color: AppColors.lilac),
+                // The hidden link keeps its width, so the title does not shift.
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Visibility(
+                      visible: !saving,
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: Text(
+                        'Hinzufügen',
+                        style: AppTextStyles.title.copyWith(
+                          color: AppColors.lilac,
+                        ),
+                      ),
+                    ),
+                    if (saving)
+                      Semantics(
+                        label: 'Wird gespeichert',
+                        child: const SizedBox.square(
+                          key: ValueKey('add_words_saving'),
+                          dimension: _AddWordsScreenState._topBarIconSize,
+                          child: CircularProgressIndicator(
+                            strokeWidth: _spinnerStroke,
+                            color: AppColors.lilac,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

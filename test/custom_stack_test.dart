@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,7 @@ import 'package:sprachlern/services/gemini_sentence_service.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
 import 'package:sprachlern/widgets/custom_stack_card_row.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'helpers/fake_functions_client.dart';
 
@@ -278,5 +281,77 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await _pumpFlow(tester, repository: repository);
     expect(find.text('Karten: 3'), findsOneWidget);
+  });
+
+  testWidgets('Speichern zeigt Ladezustand, Doppeltipp speichert nur einmal', (
+    tester,
+  ) async {
+    final functions = FakeFunctionsClient(_translations)
+      ..gate = Completer<void>();
+    final repository = _FakeCustomStackRepository();
+    await _pumpFlow(tester, repository: repository, functions: functions);
+
+    await tester.tap(find.byKey(const ValueKey('custom_stack_add')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('add_words_field')),
+      'Essen',
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('add_words_submit')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('add_words_saving')), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('add_words_field')))
+          .enabled,
+      isFalse,
+    );
+
+    // A second tap while the function is still running starts nothing.
+    await tester.tap(find.byKey(const ValueKey('add_words_submit')));
+    await tester.pump();
+    expect(functions.requestedSentences, ['Ich mag Essen sehr.']);
+
+    functions.gate!.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddWordsScreen), findsNothing);
+    expect(find.text('Karten: 1'), findsOneWidget);
+    expect(repository.insertedInto, hasLength(1));
+    expect(repository.cards, hasLength(1));
+  });
+
+  testWidgets('Fehler beim Speichern: Hinweis, Eingabe bleibt, Retry klappt', (
+    tester,
+  ) async {
+    final functions = FakeFunctionsClient(_translations)
+      ..failWith = const FunctionException(status: 502);
+    final repository = _FakeCustomStackRepository();
+    await _pumpFlow(tester, repository: repository, functions: functions);
+    await _addEntries(tester, 'Essen', textMode: false);
+
+    expect(find.byType(AddWordsScreen), findsOneWidget);
+    final error = tester.widget<Text>(
+      find.byKey(const ValueKey('add_words_error')),
+    );
+    expect(error.style!.color, AppColors.error);
+    expect(repository.insertedInto, isEmpty);
+
+    // Not stuck in the loading state, and the input is still there.
+    expect(find.byKey(const ValueKey('add_words_saving')), findsNothing);
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('add_words_field')),
+    );
+    expect(field.enabled, isTrue);
+    expect(field.controller!.text, 'Essen');
+
+    functions.failWith = null;
+    await tester.tap(find.byKey(const ValueKey('add_words_submit')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddWordsScreen), findsNothing);
+    expect(find.text('Karten: 1'), findsOneWidget);
   });
 }
