@@ -8,7 +8,7 @@
 ## Testergebnis
 - `flutter analyze`: No issues found. `flutter test`: 45/45 (38 vorher + 6 Auth + 1 Persistenz).
 - Angepasst, Assertions unverändert: `custom_stack_test.dart` (Overrides für User-ID + In-Memory-Repository, sonst greift der Provider auf das uninitialisierte Supabase zu). **Nicht vorgesehen, aber zwingend:** `widget_test.dart` pumpt die ganze App ohne Session — die geforderte Umleitung schickt sie auf `/login` statt zur Bottom-Nav. Läuft jetzt mit angemeldetem Fake.
-- Nicht gegen das echte Supabase getestet: der Publishable Key fehlt (s. u.).
+- Nicht gegen das echte Supabase getestet: Die Netzwerk-Richtlinie des Cloud-Containers blockiert `rojvuhvsnxeezzqrrcya.supabase.co`.
 ## Entscheidungen
 - **Redirect:** `routerProvider` baut den GoRouter einmal; ein `ValueNotifier<bool>` spiegelt `isAuthenticatedProvider` und ist `refreshListenable`. Den Router bei jedem Auth-Wechsel neu zu bauen würde den Navigations-Stack verwerfen. `isAuthenticated` = synchrone `currentSession != null`, bei jedem Auth-Event neu berechnet — sonst würde eine gespeicherte Session beim Start kurz auf `/login` umgeleitet, bevor das erste Stream-Event kommt.
 - Ein Formular (`auth_form.dart`) für beide Screens. Feld-Deko aus `add_words_screen.dart` dupliziert (gesperrt), Primär-Button privat (es gibt kein geteiltes Widget).
@@ -20,8 +20,7 @@
 - (b) Function behalten, Karte um `english_sentence` + `gap_word` erweitern (Migration + Modell). Passt zur Lückentext-Übung einer Englisch-App — die jetzigen Karten üben gar kein Englisch. Offen: Wort-Eingabe braucht zuerst einen deutschen Satz, die Function erwartet `germanSentence`.
 - (c) Mischform: deutscher Satz bleibt Quelle, die Übersetzung kommt als Zusatzspalten dazu; Satz für Wort-Eingabe per zweitem Function-Modus.
 ## Offene Probleme
-- **Publishable Key fehlt:** `supabase_config.dart` enthält einen Platzhalter; jeder Aufruf scheitert mit „Invalid API key".
-- Schema nicht live geprüft (Spaltennamen laut Auftrag). Batch-Inserts haben dasselbe `created_at`; `id` bricht den Gleichstand, bei UUIDs aber nicht in Einfügereihenfolge → Positionsspalte.
+- Schema nicht live geprüft (Spaltennamen laut Auftrag, Host im Container gesperrt). Batch-Inserts haben dasselbe `created_at`; `id` bricht den Gleichstand, bei UUIDs aber nicht in Einfügereihenfolge → Positionsspalte.
 - Lade-/Speicherfehler des Custom-Stapels erscheinen nur im Log, und vor dem Laden steht kurz der Leerzustand. Behebung: AsyncNotifier + Änderung der zwei gesperrten Screens.
 - Supabase-Fehlertexte sind englisch („Invalid login credentials"); ein deutsches Mapping steht aus (design.md: deutsche UI).
 - Veraltet, nicht geändert (gesperrt): CLAUDE.md „Flutter-Client-Anbindung noch nicht implementiert"; Kommentar „In-memory only" in `models/custom_stack_data.dart`.
