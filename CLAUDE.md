@@ -78,6 +78,7 @@ Der Tech-Stack ist **Flutter / Dart** mit Riverpod (State Management) und go_rou
 - **State Management**: Riverpod (`flutter_riverpod`)
 - **Navigation / Routing**: `go_router`
 - **Backend**: Supabase ist für ein späteres Backend-Inkrement geplant, aber aktuell noch nicht integriert.
+- **KI-Anbindung (geplant)**: Für automatische Satzübersetzung bei Custom-Stapeln (Wörter/Text-Eingabe) wird ein LLM (Kandidat: Gemini Flash oder GPT-4o mini, günstige Wahl für einfache Übersetzungsaufgaben) über eine Supabase Edge Function angebunden — der API-Key darf niemals im Client-Bundle liegen. Noch nicht implementiert.
 
 ### Build- und Test-Befehle
 

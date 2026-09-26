@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:sprachlern/navigation/bottom_nav_shell.dart';
 import 'package:sprachlern/screens/account_screen.dart';
+import 'package:sprachlern/screens/add_words_screen.dart';
+import 'package:sprachlern/screens/custom_stack_screen.dart';
 import 'package:sprachlern/screens/content_screen.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
 import 'package:sprachlern/screens/grammar_exercise_screen.dart';
@@ -65,5 +67,12 @@ final appRouter = GoRouter(
       ],
     ),
     GoRoute(path: '/stack-revue', builder: (_, _) => const StackRevueScreen()),
+    GoRoute(
+      path: '/custom-stack',
+      builder: (_, _) => const CustomStackScreen(),
+      routes: [
+        GoRoute(path: 'add', builder: (_, _) => const AddWordsScreen()),
+      ],
+    ),
   ],
 );
