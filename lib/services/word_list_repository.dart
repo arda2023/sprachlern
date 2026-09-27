@@ -7,22 +7,47 @@ class WordListRepository {
 
   final SupabaseClient _client;
 
+  static const _wordSelect = '''
+    stack_word_id,
+    repetitions,
+    last_seen_at,
+    is_favorite,
+    is_deactivated,
+    is_in_playlist,
+    stack_words!inner(
+      target_word,
+      german_word,
+      english_example
+    )
+  ''';
+
   Future<List<WordListEntry>> fetchLearnedWords() async {
-    final rows = await _client.from('user_word_progress').select('''
-      stack_word_id,
-      repetitions,
-      last_seen_at,
-      is_favorite,
-      is_deactivated,
-      is_in_playlist,
-      stack_words!inner(
-        target_word,
-        german_word,
-        english_example
-      )
-    ''');
+    final rows = await _client.from('user_word_progress').select(_wordSelect);
 
     return [for (final row in rows) _entryFromRow(row)];
+  }
+
+  Future<List<WordListEntry>> fetchFavorites() async {
+    final rows = await _client
+        .from('user_word_progress')
+        .select(_wordSelect)
+        .eq('is_favorite', true);
+
+    return [for (final row in rows) _entryFromRow(row)];
+  }
+
+  Future<void> setDeactivated(String stackWordId, bool deactivated) async {
+    await _client
+        .from('user_word_progress')
+        .update({'is_deactivated': deactivated})
+        .eq('stack_word_id', stackWordId);
+  }
+
+  Future<void> setFavorite(String stackWordId, bool favorite) async {
+    await _client
+        .from('user_word_progress')
+        .update({'is_favorite': favorite})
+        .eq('stack_word_id', stackWordId);
   }
 
   static WordListEntry _entryFromRow(Map<String, dynamic> row) {

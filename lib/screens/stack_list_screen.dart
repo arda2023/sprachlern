@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/assets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sprachlern/models/content_data.dart';
+import 'package:sprachlern/models/word_list_data.dart';
 import 'package:sprachlern/providers/content_provider.dart';
+import 'package:sprachlern/providers/word_list_provider.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
@@ -15,6 +18,7 @@ class StackListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stacks = ref.watch(stackListProvider);
+    final favorites = ref.watch(favoritesListProvider);
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -43,33 +47,61 @@ class StackListScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                data: (stacks) => ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.pageMargin,
-                    AppSpacing.s16,
-                    AppSpacing.pageMargin,
-                    AppSpacing.s24,
-                  ),
-                  itemCount: stacks.length + 1,
-                  separatorBuilder: (_, index) => SizedBox(
-                    height: index == 0 ? AppSpacing.s8 : AppSpacing.listGap,
-                  ),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return const SectionHeader('DEINE STAPEL');
-                    }
-                    final stack = stacks[index - 1];
-                    return StackListItem(
-                      stack: stack,
-                      onTap: () => context.push('/stacks/${stack.id}'),
-                    );
-                  },
+                data: (stacks) => _StackItems(
+                  stacks: stacks,
+                  favorites: favorites.asData?.value ?? const [],
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StackItems extends StatelessWidget {
+  const _StackItems({required this.stacks, required this.favorites});
+
+  final List<VocabularyStackData> stacks;
+  final List<WordListEntry> favorites;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasFavorites = favorites.isNotEmpty;
+    final favoriteStack = VocabularyStackData(
+      id: 'favoriten',
+      icon: FLucideIcons.heart,
+      title: 'Favoriten',
+      difficultyLevel: 0,
+    );
+    final itemCount = 1 + (hasFavorites ? 1 : 0) + stacks.length;
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageMargin,
+        AppSpacing.s16,
+        AppSpacing.pageMargin,
+        AppSpacing.s24,
+      ),
+      itemCount: itemCount,
+      separatorBuilder: (_, index) =>
+          SizedBox(height: index == 0 ? AppSpacing.s8 : AppSpacing.listGap),
+      itemBuilder: (context, index) {
+        if (index == 0) return const SectionHeader('DEINE STAPEL');
+        if (hasFavorites && index == 1) {
+          return StackListItem(
+            stack: favoriteStack,
+            onTap: () => context.push('/favorites/exercise'),
+          );
+        }
+        final stackIndex = index - 1 - (hasFavorites ? 1 : 0);
+        final stack = stacks[stackIndex];
+        return StackListItem(
+          stack: stack,
+          onTap: () => context.push('/stacks/${stack.id}'),
+        );
+      },
     );
   }
 }

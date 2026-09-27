@@ -7,10 +7,22 @@ import 'package:sprachlern/theme/app_text_styles.dart';
 
 /// Wortlisten-Zeile, design.md 5.10. A tap opens the word info sheet.
 class WordListRow extends StatelessWidget {
-  const WordListRow({super.key, required this.entry, this.onTap});
+  const WordListRow({
+    super.key,
+    required this.entry,
+    this.onTap,
+    this.onDeactivate,
+    this.onSpeak,
+    this.onPlaylistTap,
+    this.onFavoriteTap,
+  });
 
   final WordListEntry entry;
   final VoidCallback? onTap;
+  final VoidCallback? onDeactivate;
+  final ValueChanged<String>? onSpeak;
+  final VoidCallback? onPlaylistTap;
+  final VoidCallback? onFavoriteTap;
 
   static const double _iconSize = 24.0;
   static const double _chevronSize = 16.0;
@@ -27,9 +39,16 @@ class WordListRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(child: _Texts(entry: entry)),
+              Expanded(
+                child: _Texts(entry: entry, onSpeak: onSpeak),
+              ),
               const SizedBox(width: AppSpacing.s8),
-              const _ActionIcons(),
+              _ActionIcons(
+                entry: entry,
+                onDeactivate: onDeactivate,
+                onPlaylistTap: onPlaylistTap,
+                onFavoriteTap: onFavoriteTap,
+              ),
               const SizedBox(width: AppSpacing.s8),
               const SizedBox(
                 width: _iconSize,
@@ -48,13 +67,19 @@ class WordListRow extends StatelessWidget {
 }
 
 class _Texts extends StatelessWidget {
-  const _Texts({required this.entry});
+  const _Texts({required this.entry, this.onSpeak});
 
   final WordListEntry entry;
+  final ValueChanged<String>? onSpeak;
 
   @override
   Widget build(BuildContext context) {
-    final example = Text(entry.exampleSentence, style: AppTextStyles.enLine);
+    final example = GestureDetector(
+      key: ValueKey('word_row_sentence_${entry.stackWordId}'),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onSpeak?.call(entry.exampleSentence),
+      child: Text(entry.exampleSentence, style: AppTextStyles.enLine),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,11 +91,19 @@ class _Texts extends StatelessWidget {
                 child: Text(entry.headword, style: AppTextStyles.enHeadword),
               ),
               const SizedBox(width: AppSpacing.s8),
-              const Icon(
-                FLucideIcons.volume2,
-                size: WordListRow._iconSize,
-                color: AppColors.white,
-                semanticLabel: 'Aussprache',
+              GestureDetector(
+                key: ValueKey('word_row_speaker_${entry.stackWordId}'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSpeak?.call(entry.headword),
+                child: Semantics(
+                  button: true,
+                  label: 'Wort aussprechen',
+                  child: Icon(
+                    FLucideIcons.volume2,
+                    size: WordListRow._iconSize,
+                    color: AppColors.white,
+                  ),
+                ),
               ),
             ],
           ),
@@ -110,28 +143,73 @@ class _Texts extends StatelessWidget {
   );
 }
 
-/// Three dimmed actions, stacked. Inert for now and purely decorative
-/// (design.md 8: dimmed icons carry no meaning on their own).
 class _ActionIcons extends StatelessWidget {
-  const _ActionIcons();
+  const _ActionIcons({
+    required this.entry,
+    this.onDeactivate,
+    this.onPlaylistTap,
+    this.onFavoriteTap,
+  });
 
-  static const _icons = [
-    FLucideIcons.listX,
-    FLucideIcons.music,
-    FLucideIcons.heart,
-  ];
+  final WordListEntry entry;
+  final VoidCallback? onDeactivate;
+  final VoidCallback? onPlaylistTap;
+  final VoidCallback? onFavoriteTap;
 
   @override
   Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (index, icon) in _icons.indexed) ...[
-            if (index > 0) const SizedBox(height: AppSpacing.s16),
-            Icon(icon, size: WordListRow._iconSize, color: AppColors.iconDim),
-          ],
-        ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _ActionIcon(
+          key: ValueKey('word_row_deactivate_${entry.stackWordId}'),
+          icon: FLucideIcons.listX,
+          label: 'Wort deaktivieren',
+          onTap: onDeactivate,
+        ),
+        const SizedBox(height: AppSpacing.s16),
+        _ActionIcon(
+          key: ValueKey('word_row_playlist_${entry.stackWordId}'),
+          icon: FLucideIcons.music,
+          label: 'Zur Playlist hinzufügen',
+          onTap: onPlaylistTap,
+        ),
+        const SizedBox(height: AppSpacing.s16),
+        _ActionIcon(
+          key: ValueKey('word_row_favorite_${entry.stackWordId}'),
+          icon: FLucideIcons.heart,
+          label: entry.isFavorite ? 'Favorit entfernen' : 'Favorit markieren',
+          color: entry.isFavorite ? AppColors.lilac : AppColors.iconDim,
+          onTap: onFavoriteTap,
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionIcon extends StatelessWidget {
+  const _ActionIcon({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.color = AppColors.iconDim,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap ?? () {},
+        child: Icon(icon, size: WordListRow._iconSize, color: color),
       ),
     );
   }

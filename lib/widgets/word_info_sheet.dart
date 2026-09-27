@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:forui/assets.dart';
 import 'package:sprachlern/models/word_list_data.dart';
+import 'package:sprachlern/services/word_list_speech.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
@@ -8,7 +9,11 @@ import 'package:sprachlern/theme/app_text_styles.dart';
 /// Info sheet without button, design.md 5.11: it sits on `--surface` and closes
 /// via ✕ or by swiping down. The note lives only as long as the sheet — it is
 /// not written back to any provider yet.
-Future<void> showWordInfoSheet(BuildContext context, WordInfoData info) {
+Future<void> showWordInfoSheet(
+  BuildContext context,
+  WordInfoData info, {
+  WordListSpeech? speech,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppColors.surface,
@@ -20,14 +25,18 @@ Future<void> showWordInfoSheet(BuildContext context, WordInfoData info) {
         top: Radius.circular(AppSpacing.radiusSheet),
       ),
     ),
-    builder: (sheetContext) => _WordInfoSheet(info: info),
+    builder: (sheetContext) => _WordInfoSheet(
+      info: info,
+      speech: speech ?? FlutterTtsWordListSpeech(),
+    ),
   );
 }
 
 class _WordInfoSheet extends StatefulWidget {
-  const _WordInfoSheet({required this.info});
+  const _WordInfoSheet({required this.info, required this.speech});
 
   final WordInfoData info;
+  final WordListSpeech speech;
 
   @override
   State<_WordInfoSheet> createState() => _WordInfoSheetState();
@@ -90,11 +99,19 @@ class _WordInfoSheetState extends State<_WordInfoSheet> {
                   child: Text(info.headword, style: AppTextStyles.enHeadword),
                 ),
                 const SizedBox(width: AppSpacing.s8),
-                const Icon(
-                  FLucideIcons.volume2,
-                  size: 24,
-                  color: AppColors.white,
-                  semanticLabel: 'Aussprache',
+                GestureDetector(
+                  key: const ValueKey('word_info_speaker'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => widget.speech.speak(info.headword),
+                  child: Semantics(
+                    button: true,
+                    label: 'Wort aussprechen',
+                    child: Icon(
+                      FLucideIcons.volume2,
+                      size: 24,
+                      color: AppColors.white,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -106,7 +123,12 @@ class _WordInfoSheetState extends State<_WordInfoSheet> {
             const SizedBox(height: AppSpacing.s16),
             const _Divider(),
             const SizedBox(height: AppSpacing.s16),
-            Text(info.exampleSentence, style: AppTextStyles.enLine),
+            GestureDetector(
+              key: const ValueKey('word_info_sentence'),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => widget.speech.speak(info.exampleSentence),
+              child: Text(info.exampleSentence, style: AppTextStyles.enLine),
+            ),
             const SizedBox(height: AppSpacing.s16),
             const _Divider(),
             TextField(

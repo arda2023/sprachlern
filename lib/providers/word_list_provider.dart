@@ -12,7 +12,14 @@ final wordListProvider = FutureProvider<List<WordListEntry>>((ref) async {
   final entries = await ref
       .watch(wordListRepositoryProvider)
       .fetchLearnedWords();
-  return [...entries]..sort(
+  return [...entries.where((entry) => !entry.isDeactivated)]..sort(
+    (a, b) => a.headword.toLowerCase().compareTo(b.headword.toLowerCase()),
+  );
+});
+
+final favoritesListProvider = FutureProvider<List<WordListEntry>>((ref) async {
+  final entries = await ref.watch(wordListRepositoryProvider).fetchFavorites();
+  return [...entries.where((entry) => !entry.isDeactivated)]..sort(
     (a, b) => a.headword.toLowerCase().compareTo(b.headword.toLowerCase()),
   );
 });

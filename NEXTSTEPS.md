@@ -1,25 +1,24 @@
 # NEXTSTEPS
 
 ## Erledigt
-- Migration `20260929000000_word_actions_columns.sql` ergänzt vier Wortaktionsspalten.
-- Bestehende RLS-Policy und Authenticated-Grants gelten automatisch für die neuen Spalten.
-- `WordListEntry` um ID und drei Aktionszustände erweitert.
-- `WordListRepository` lädt nur Progress-Zeilen mit innerem `stack_words`-Join.
-- Relative deutsche `lastSeen`-Texte werden am Repository-Rand formatiert.
-- Wortliste nutzt `FutureProvider` mit Lade-, Fehler- und Leerzustand.
-- `/progress` zeigt direkt `WordListScreen`; `ProgressScreen` bleibt ungenutzt erhalten.
-- Bestehende Wortlistentests verwenden ein Fake-Repository; Leer- und Zwei-Wort-Fälle ergänzt.
+- `setFavorite` und `fetchFavorites` persistieren bzw. laden Favoriten über RLS.
+- Herz-Tap toggelt `is_favorite`, invalidiert beide Wortlisten und färbt aktiv lilac.
+- Stapelliste zeigt `Favoriten` nur bei mindestens einem aktiven Favoriten.
+- Der synthetische Eintrag navigiert zu `/favorites/exercise`.
+- Neuer Favorites-Screen nutzt lokale FillInCard-/DiffInputField-Logik ohne RPC/SM-2.
+- Favoriten werden nacheinander geprüft; Übersetzung und Leerzustand sind enthalten.
+- Tests decken Toggle, leere Liste, Stapel-Navigation und lokale Übung ab.
 
 ## Geänderte Dateien
-- `supabase/migrations/20260929000000_word_actions_columns.sql`
-- `lib/models/word_list_data.dart`, `lib/services/word_list_repository.dart`
-- `lib/providers/word_list_provider.dart`, `lib/screens/word_list_screen.dart`
-- `lib/router/app_router.dart`, `test/texts_word_list_test.dart`
+- Repository/Provider, Wortlisten-Screen/-Row, StackListScreen, Router
+- `lib/screens/favorites_exercise_screen.dart`, `test/favorites_exercise_screen_test.dart`
+- `test/texts_word_list_test.dart`
 
 ## Testergebnis
-- `flutter analyze`: `No issues found! (ran in 2.3s)`.
-- `flutter test test/texts_word_list_test.dart`: `00:01 +9: All tests passed!`.
-- `flutter test`: `00:05 +109: All tests passed!`.
+- `flutter analyze`: `No issues found! (ran in 1.9s)`.
+- `flutter test test/texts_word_list_test.dart test/favorites_exercise_screen_test.dart`: `All tests passed!`.
+- `flutter test`: `00:05 +116: All tests passed!`.
 
 ## Abweichungen und offene Probleme
-- Migration nicht gegen eine Live-Supabase-Instanz ausgeführt.
+- Favoritenübung endet nach dem letzten Wort mit Navigation zu `/stacks`.
+- SQL-Migration nicht gegen eine Live-Supabase-Instanz ausgeführt.

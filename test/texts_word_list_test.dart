@@ -7,6 +7,7 @@ import 'package:sprachlern/models/text_data.dart';
 import 'package:sprachlern/models/word_list_data.dart';
 import 'package:sprachlern/providers/word_list_provider.dart';
 import 'package:sprachlern/services/word_list_repository.dart';
+import 'package:sprachlern/services/word_list_speech.dart';
 import 'package:sprachlern/screens/text_exercise_screen.dart';
 import 'package:sprachlern/screens/texts_screen.dart';
 import 'package:sprachlern/screens/word_list_screen.dart';
@@ -24,8 +25,9 @@ void _phoneSize(WidgetTester tester) {
 }
 
 class _FakeWordListRepository extends WordListRepository {
-  _FakeWordListRepository(this.entries)
-    : super(
+  _FakeWordListRepository(List<WordListEntry> entries)
+    : entries = List.of(entries),
+      super(
         SupabaseClient(
           'https://example.supabase.co',
           'test-key',
@@ -34,21 +36,70 @@ class _FakeWordListRepository extends WordListRepository {
       );
 
   final List<WordListEntry> entries;
+  final deactivationCalls = <({String stackWordId, bool deactivated})>[];
+  final favoriteCalls = <({String stackWordId, bool favorite})>[];
 
   @override
   Future<List<WordListEntry>> fetchLearnedWords() async => entries;
+
+  @override
+  Future<List<WordListEntry>> fetchFavorites() async => entries
+      .where((entry) => entry.isFavorite && !entry.isDeactivated)
+      .toList();
+
+  @override
+  Future<void> setDeactivated(String stackWordId, bool deactivated) async {
+    deactivationCalls.add((stackWordId: stackWordId, deactivated: deactivated));
+    if (deactivated) {
+      entries.removeWhere((entry) => entry.stackWordId == stackWordId);
+    }
+  }
+
+  @override
+  Future<void> setFavorite(String stackWordId, bool favorite) async {
+    favoriteCalls.add((stackWordId: stackWordId, favorite: favorite));
+    final index = entries.indexWhere(
+      (entry) => entry.stackWordId == stackWordId,
+    );
+    if (index < 0) return;
+    final entry = entries[index];
+    entries[index] = WordListEntry(
+      stackWordId: entry.stackWordId,
+      headword: entry.headword,
+      translation: entry.translation,
+      exampleSentence: entry.exampleSentence,
+      lastSeen: entry.lastSeen,
+      repeatCount: entry.repeatCount,
+      isCurrentlySelected: entry.isCurrentlySelected,
+      isFavorite: favorite,
+      isDeactivated: entry.isDeactivated,
+      isInPlaylist: entry.isInPlaylist,
+    );
+  }
+}
+
+class _FakeWordListSpeech implements WordListSpeech {
+  final spoken = <String>[];
+
+  @override
+  Future<void> speak(String text) async {
+    spoken.add(text);
+  }
 }
 
 Future<void> _pumpScreen(
   WidgetTester tester,
   Widget screen, {
   List<WordListEntry>? learnedWords,
+  WordListRepository? repository,
 }) async {
   _phoneSize(tester);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        if (learnedWords != null)
+        if (repository != null)
+          wordListRepositoryProvider.overrideWithValue(repository)
+        else if (learnedWords != null)
           wordListRepositoryProvider.overrideWithValue(
             _FakeWordListRepository(learnedWords),
           ),
@@ -387,9 +438,10 @@ void main() {
   testWidgets('Wortliste: Suche filtert, Teal-Pill, Info-Sheet mit Zähler', (
     tester,
   ) async {
+    final speech = _FakeWordListSpeech();
     await _pumpScreen(
       tester,
-      const WordListScreen(),
+      WordListScreen(speech: speech),
       learnedWords: _learnedWords,
     );
 
@@ -436,7 +488,7 @@ void main() {
     expect(find.byType(WordListRow), findsNWidgets(total));
 
     // Row → info sheet on --surface, notes counter follows the input.
-    await tester.tap(find.byKey(const ValueKey('word_row_cheerful')));
+    await tester.tap(find.text('cheerful').first);
     await tester.pumpAndSettle();
 
     final sheet = find.byType(BottomSheet);
@@ -456,6 +508,10 @@ void main() {
     );
     expect(find.text('Füge eigene Notizen hinzu …'), findsOneWidget);
     expect(find.text('0 / 1000'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('word_info_speaker')));
+    await tester.tap(find.byKey(const ValueKey('word_info_sentence')));
+    expect(speech.spoken, ['cheerful', 'She is a cheerful girl.']);
 
     await tester.enterText(
       find.byKey(const ValueKey('word_note_field')),
@@ -548,5 +604,93 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('umbrella'), findsNothing);
+  });
+
+  testWidgets('Wortliste: Zeilen-Icons bleiben vom Info-Tap getrennt', (
+    tester,
+  ) async {
+    final speech = _FakeWordListSpeech();
+    await _pumpScreen(
+      tester,
+      WordListScreen(speech: speech),
+      learnedWords: _learnedWords,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('word_row_speaker_cheerful-id')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('word_row_sentence_cheerful-id')),
+    );
+    expect(speech.spoken, ['cheerful', 'She is a cheerful girl.']);
+    expect(find.byType(BottomSheet), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey('word_row_playlist_cheerful-id')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('word_row_favorite_cheerful-id')),
+    );
+    await tester.pump();
+    expect(find.byType(BottomSheet), findsNothing);
+  });
+
+  testWidgets('Wortliste: Deaktivieren bestätigt und entfernt die Zeile', (
+    tester,
+  ) async {
+    final repository = _FakeWordListRepository(_learnedWords.take(2).toList());
+    await _pumpScreen(tester, const WordListScreen(), repository: repository);
+
+    await tester.tap(
+      find.byKey(const ValueKey('word_row_deactivate_umbrella-id')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Wort deaktivieren?'), findsOneWidget);
+    expect(
+      find.text(
+        'Dieses Wort wird während deiner Lernsessions nicht mehr angezeigt. '
+        'Du kannst es jederzeit wieder aktivieren.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byType(BottomSheet), findsNothing);
+
+    await tester.tap(find.text('Deaktivieren'));
+    await tester.pumpAndSettle();
+
+    expect(repository.deactivationCalls, [
+      (stackWordId: 'umbrella-id', deactivated: true),
+    ]);
+    expect(find.byKey(const ValueKey('word_row_umbrella')), findsNothing);
+    expect(find.byKey(const ValueKey('word_row_bridge')), findsOneWidget);
+  });
+
+  testWidgets('Wortliste: Herz toggelt und persistiert den Favoritenstatus', (
+    tester,
+  ) async {
+    final repository = _FakeWordListRepository([_learnedWords.first]);
+    await _pumpScreen(tester, const WordListScreen(), repository: repository);
+
+    final heart = find.byKey(const ValueKey('word_row_favorite_umbrella-id'));
+    Icon heartIcon() => tester.widget<Icon>(
+      find.descendant(of: heart, matching: find.byType(Icon)),
+    );
+
+    expect(heartIcon().color, AppColors.iconDim);
+    await tester.tap(heart);
+    await tester.pumpAndSettle();
+    expect(repository.favoriteCalls, [
+      (stackWordId: 'umbrella-id', favorite: true),
+    ]);
+    expect(heartIcon().color, AppColors.lilac);
+
+    await tester.tap(heart);
+    await tester.pumpAndSettle();
+    expect(repository.favoriteCalls, [
+      (stackWordId: 'umbrella-id', favorite: true),
+      (stackWordId: 'umbrella-id', favorite: false),
+    ]);
+    expect(heartIcon().color, AppColors.iconDim);
   });
 }

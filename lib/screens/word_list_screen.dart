@@ -4,6 +4,7 @@ import 'package:forui/assets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sprachlern/models/word_list_data.dart';
 import 'package:sprachlern/providers/word_list_provider.dart';
+import 'package:sprachlern/services/word_list_speech.dart';
 import 'package:sprachlern/theme/app_colors.dart';
 import 'package:sprachlern/theme/app_spacing.dart';
 import 'package:sprachlern/theme/app_text_styles.dart';
@@ -12,13 +13,17 @@ import 'package:sprachlern/widgets/word_info_sheet.dart';
 import 'package:sprachlern/widgets/word_list_row.dart';
 
 class WordListScreen extends ConsumerStatefulWidget {
-  const WordListScreen({super.key});
+  const WordListScreen({super.key, this.speech});
+
+  final WordListSpeech? speech;
 
   @override
   ConsumerState<WordListScreen> createState() => _WordListScreenState();
 }
 
 class _WordListScreenState extends ConsumerState<WordListScreen> {
+  late final WordListSpeech _speech =
+      widget.speech ?? FlutterTtsWordListSpeech();
   final _searchController = TextEditingController();
 
   /// One key per letter, attached to the first row of that letter, so the
@@ -52,7 +57,49 @@ class _WordListScreenState extends ConsumerState<WordListScreen> {
   Future<void> _openInfo(WordListEntry entry) async {
     final info = await ref.read(wordInfoProvider(entry.headword).future);
     if (!mounted || info == null) return;
-    showWordInfoSheet(context, info);
+    showWordInfoSheet(context, info, speech: _speech);
+  }
+
+  Future<void> _deactivate(WordListEntry entry) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Wort deaktivieren?'),
+        content: const Text(
+          'Dieses Wort wird während deiner Lernsessions nicht mehr angezeigt. '
+          'Du kannst es jederzeit wieder aktivieren.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Deaktivieren'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    await ref
+        .read(wordListRepositoryProvider)
+        .setDeactivated(entry.stackWordId, true);
+    if (mounted) {
+      ref.invalidate(wordListProvider);
+      ref.invalidate(favoritesListProvider);
+    }
+  }
+
+  Future<void> _toggleFavorite(WordListEntry entry) async {
+    await ref
+        .read(wordListRepositoryProvider)
+        .setFavorite(entry.stackWordId, !entry.isFavorite);
+    if (mounted) {
+      ref.invalidate(wordListProvider);
+      ref.invalidate(favoritesListProvider);
+    }
   }
 
   @override
@@ -111,6 +158,10 @@ class _WordListScreenState extends ConsumerState<WordListScreen> {
         key: ValueKey('word_row_${entry.headword}'),
         entry: entry,
         onTap: () => _openInfo(entry),
+        onDeactivate: () => _deactivate(entry),
+        onSpeak: (text) => _speech.speak(text),
+        onPlaylistTap: () {},
+        onFavoriteTap: () => _toggleFavorite(entry),
       );
 
       if (!letters.contains(letter)) {

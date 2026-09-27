@@ -5,13 +5,14 @@ import 'package:sprachlern/navigation/bottom_nav_shell.dart';
 import 'package:sprachlern/providers/auth_provider.dart';
 import 'package:sprachlern/screens/account_screen.dart';
 import 'package:sprachlern/screens/add_words_screen.dart';
-import 'package:sprachlern/screens/custom_stack_screen.dart';
-import 'package:sprachlern/screens/custom_stack_exercise_screen.dart';
 import 'package:sprachlern/screens/content_screen.dart';
+import 'package:sprachlern/screens/custom_stack_exercise_screen.dart';
+import 'package:sprachlern/screens/custom_stack_screen.dart';
 import 'package:sprachlern/screens/exercise_screen.dart';
+import 'package:sprachlern/screens/favorites_exercise_screen.dart';
+import 'package:sprachlern/screens/grammar_exercise_screen.dart';
 import 'package:sprachlern/screens/grammar_explanation_screen.dart';
 import 'package:sprachlern/screens/grammar_list_screen.dart';
-import 'package:sprachlern/screens/grammar_exercise_screen.dart';
 import 'package:sprachlern/screens/home_screen.dart';
 import 'package:sprachlern/screens/knowledge_center_screen.dart';
 import 'package:sprachlern/screens/learn_screen.dart';
@@ -104,6 +105,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/grammar-exercise',
         builder: (_, _) => const GrammarExerciseScreen(),
+      ),
+      GoRoute(
+        path: '/favorites/exercise',
+        builder: (_, _) => const FavoritesExerciseScreen(),
       ),
       GoRoute(
         path: '/grammar-list',
